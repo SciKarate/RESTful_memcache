@@ -1,28 +1,39 @@
 #include <cache.hh>
+#include <iostream>
 
-class Cache::Impl {
+struct Cache::Impl {
 	index_type memused_;
 	evictor_type evictor_;
 	hash_func hasher_;
 	index_type maxmem_;
 public:
-	Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
+	/*Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
 	 : maxmem_(maxmem), evictor_(evictor), hasher_(hasher), memused_(0)
 	{
 	}
 
-	~Impl() = default;
+	~Impl() = default;*/
 
 	void set(key_type key, val_type val, index_type size)
 	{
+		hash_func hasher = std::hash<std::string>();
+		size_t hashed = hasher(key);
+		//put key,val pair into array. wtf is size??
 	}
 	
 	val_type get(key_type key, index_type& val_size) const
 	{
+		hash_func hasher = std::hash<std::string>();
+		size_t hashed = hasher(key);
+		//return a pointer to key in array
 	}
 
 	void del(key_type key)
 	{
+		printf("god help us\n");
+		hash_func hasher = std::hash<std::string>();
+		size_t hashed = hasher(key);
+		//if there's anything at hashed in array, delete it n
 	}
 
 	index_type space_used() const
@@ -32,16 +43,10 @@ public:
 };
 
 // Create a new cache object with a given maximum memory capacity.
-Cache::Cache(index_type maxmem,
-	evictor_type evictor,
-	hash_func hasher)
- : pImpl_()
-{
-}
+Cache::Cache(index_type maxmem, evictor_type evictor, hash_func hasher)
+: pImpl_(new Impl) {}
 
-Cache::~Cache()
-{
-}
+Cache::~Cache() = default;
 
 // Add a <key, value> pair to the cache.
 // If key already exists, it will overwrite the old value.
@@ -75,20 +80,32 @@ Cache::space_used() const
 	return pImpl_ ->space_used();
 }
 
-uint32_t hasho(const std::string x)
-{
-	return 10;
-}
-
-uint32_t evicto(void)
-{
-	return 10;
-}
-
 int main()
 {
 	Cache test_cache(10);
-	test_cache.space_used();
+	std::cout << test_cache.space_used() << std::endl;
+	test_cache.del("help");
+	Cache::val_type x = "grape";
+	Cache::index_type y = 10;
+	test_cache.set("apple",x,y);
 }
 
 //boop
+/*
+unordered_map<std::string, void*, hash_func> my_table(0, hasher_;
+
+hash_func hasher;
+hash_vale = hasher();
+
+std::hash<std::string> h;
+h();
+
+struct Cache::Impl {
+	unordered_map<std::string, void*, hash_func> data_;
+
+	...
+
+	Impl(maxmem, hasher, evictor)
+	: data_(0, hasher)
+}
+*/
