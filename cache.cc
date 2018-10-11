@@ -1,6 +1,6 @@
 #include <cache.hh>
 
-class Cache::Impl {
+struct Cache::Impl {
 	index_type memused_;
 	evictor_type evictor_;
 	hash_func hasher_;
