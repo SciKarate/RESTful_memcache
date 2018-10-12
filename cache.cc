@@ -9,7 +9,7 @@ private:
 	evictor_type evictor_;
 	hash_func hasher_;
 	index_type maxmem_;
-	unordered_map<std::string, void*, hash_func> data_;
+	std::unordered_map<std::string, void*, hash_func> data_;
 	
 public:
 	/*Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
@@ -30,7 +30,7 @@ public:
 	{
 		hash_func hasher = std::hash<std::string>();
 		size_t hashed = hasher(key);
-		//put key,val pair into array. wtf is size??
+		//set key, value pair with key and val
 	}
 	
 	val_type get(key_type key, index_type& val_size) const
@@ -42,7 +42,7 @@ public:
 
 	void del(key_type key)
 	{
-		printf("god help us\n");
+		printf("let's test delete\n");
 		hash_func hasher = std::hash<std::string>();
 		size_t hashed = hasher(key);
 		//if there's anything at hashed in array, delete it n
@@ -97,26 +97,22 @@ int main()
 	Cache test_cache(10);
 	std::cout << test_cache.space_used() << std::endl;
 	test_cache.del("help");
-	Cache::val_type x = "grape";
+	Cache::val_type x = "8";
 	Cache::index_type y = 10;
-	test_cache.set("apple",x,y);
+	Cache::key_type z = "zoop";
+	test_cache.set(z,x,y);
 }
 
 //boop
 /*
 unordered_map<std::string, void*, hash_func> my_table(0, hasher_;
-
 hash_func hasher;
 hash_vale = hasher();
-
 std::hash<std::string> h;
 h();
-
 struct Cache::Impl {
 	unordered_map<std::string, void*, hash_func> data_;
-
 	...
-
 	Impl(maxmem, hasher, evictor)
 	: data_(0, hasher)
 }
