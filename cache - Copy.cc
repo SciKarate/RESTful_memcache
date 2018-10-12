@@ -1,7 +1,5 @@
 #include <cache.hh>
 #include <iostream>
-#include <unordered_map>
-#include <string>
 
 struct Cache::Impl {
 private:
@@ -9,22 +7,13 @@ private:
 	evictor_type evictor_;
 	hash_func hasher_;
 	index_type maxmem_;
-	unordered_map<std::string, void*, hash_func> data_;
-	
 public:
 	/*Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
 	 : maxmem_(maxmem), evictor_(evictor), hasher_(hasher), memused_(0)
 	{
-	}*/
-
-	//~Impl() = default;
-	void do_internal_work(index_type maxmem, evictor_type evictor, hash_func hasher)
-	{
-		maxmem_ = maxmem;
-		evictor_ = evictor;
-		hasher_ = hasher;
-		memused_ = 0;
 	}
+
+	~Impl() = default;*/
 
 	void set(key_type key, val_type val, index_type size)
 	{
@@ -56,7 +45,7 @@ public:
 
 // Create a new cache object with a given maximum memory capacity.
 Cache::Cache(index_type maxmem, evictor_type evictor, hash_func hasher)
-: pImpl_(new Impl) {pImpl_ ->do_internal_work(maxmem, evictor, hasher);}
+: pImpl_(new Impl) {}
 
 Cache::~Cache() = default;
 
