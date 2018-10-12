@@ -41,7 +41,7 @@ public:
 			//also they don't work
 		//void* val_found = data_[key]; //gets void* from key
 		//val_type val_out = &val_found; //converts void* to const void*
-		return data_[key]; //why does this not work????
+		return data_[key]; //why does this not work??
 		//return a pointer to key in array
 	}
 
