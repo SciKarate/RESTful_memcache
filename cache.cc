@@ -9,7 +9,7 @@ private:
 	evictor_type evictor_;
 	hash_func hasher_;
 	index_type maxmem_;
-	std::unordered_map<std::string, void*, hash_func> data_;
+	std::unordered_map<std::string, const void*/*, hash_func*/> data_;
 	
 public:
 	/*Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
@@ -28,15 +28,20 @@ public:
 
 	void set(key_type key, val_type val, index_type size)
 	{
-		hash_func hasher = std::hash<std::string>();
-		size_t hashed = hasher(key);
+			//these two lines for if unordered_map takes void*
+		//void* val_p = &val; //converts const void* to void*
+		//data_[key] = val_p; //sets key, val_p pair
+		data_[key] = val;
 		//set key, value pair with key and val
 	}
 	
 	val_type get(key_type key, index_type& val_size) const
 	{
-		hash_func hasher = std::hash<std::string>();
-		size_t hashed = hasher(key);
+			//these two lines for if unordered map takes void*
+			//also they don't work
+		//void* val_found = data_[key]; //gets void* from key
+		//val_type val_out = &val_found; //converts void* to const void*
+		return data_[key]; //why does this not work????
 		//return a pointer to key in array
 	}
 
@@ -97,10 +102,10 @@ int main()
 	Cache test_cache(10);
 	std::cout << test_cache.space_used() << std::endl;
 	test_cache.del("help");
-	Cache::val_type x = "8";
-	Cache::index_type y = 10;
-	Cache::key_type z = "zoop";
-	test_cache.set(z,x,y);
+	Cache::val_type v = "8";
+	Cache::index_type i = 10;
+	Cache::key_type k = "zoop";
+	test_cache.set(k,v,i);
 }
 
 //boop
