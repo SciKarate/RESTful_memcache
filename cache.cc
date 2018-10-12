@@ -9,22 +9,15 @@ private:
 	evictor_type evictor_;
 	hash_func hasher_;
 	index_type maxmem_;
-	std::unordered_map<std::string, const void*/*, hash_func*/> data_;
+	std::unordered_map<std::string, const void*, hash_func> data_;
 	
 public:
-	/*Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
-	 : maxmem_(maxmem), evictor_(evictor), hasher_(hasher), memused_(0)
+	Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
+	 : maxmem_(maxmem), evictor_(evictor),, memused_(0), data_(0, hasher_)
 	{
-	}*/
-
-	//~Impl() = default;
-	void do_internal_work(index_type maxmem, evictor_type evictor, hash_func hasher)
-	{
-		maxmem_ = maxmem;
-		evictor_ = evictor;
-		hasher_ = hasher;
-		memused_ = 0;
 	}
+
+	~Impl() = default;
 
 	void set(key_type key, val_type val, index_type size)
 	{
@@ -36,11 +29,11 @@ public:
 			printf("this is where I would evict things\n");
 		}
 		data_[key] = val;
-		
+
 		std::cout << key << std::endl;
 		std::cout << val << std::endl;
 		std::cout << data_[key] << std::endl;
-		std::cout << data_["heyo"] << std::endl;
+		std::cout << data_["testempty"] << std::endl;
 		memused_ += 1; //somehow increase memused
 		//set key, value pair with key and val
 	}
@@ -75,8 +68,8 @@ public:
 
 // Create a new cache object with a given maximum memory capacity.
 Cache::Cache(index_type maxmem, evictor_type evictor, hash_func hasher)
-: pImpl_(new Impl) {pImpl_ ->do_internal_work(maxmem, evictor, hasher);}
-
+: pImpl_(new Impl(maxmem, evictor, hasher))
+{}
 Cache::~Cache() = default;
 
 // Add a <key, value> pair to the cache.
@@ -113,17 +106,17 @@ int main()
 {
 	Cache test_cache(10);
 	std::cout << test_cache.space_used() << std::endl;
-	test_cache.del("help");
+	test_cache.del("testempty");
 
-	Cache::key_type k = "zoop";
-	Cache::val_type v = "what is val_Type help me";
+	Cache::key_type k = "testkey";
+	Cache::val_type v = "why isn't this changing anything";
 	Cache::index_type i = 10;
 	test_cache.set(k,v,i);
 
 	std::cout << test_cache.space_used() << std::endl;
-	test_cache.del("help");
+	test_cache.del("testempty");
 	std::cout << test_cache.space_used() << std::endl;
-	test_cache.del("zoop");
+	test_cache.del("testkey");
 	std::cout << test_cache.space_used() << std::endl;
 }
 

@@ -41,3 +41,33 @@ struct Cache::Impl {
 	: data_(0, hasher)
 }
 */
+
+Cache::index_type my_hash_func(Cache::key_type key) {
+	return key[0];
+}
+
+
+struct MyHasher {
+	int data_;
+	MyHasher() : data_(0) {}
+
+	Cache::index_type operator()(Cache::key_type key) {
+		return key[0];
+	}
+};
+
+MyHasher hs;
+
+hs("yohoo!");
+
+
+Cache test_cache(100, [](){return 0;}, my_hash_func);
+Cache test_cache(100, [](){return 0;}, hs);
+
+char data[10] = "abcdefghi";
+
+test_cache.set("my_key", static_cast<Cache::val_type>(data), 10);
+
+int size;
+p = test_cache.get("my_key", size)
+
