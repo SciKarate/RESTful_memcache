@@ -15,11 +15,21 @@ void assign(key_type key, val_type val)
 }
 
 int main()
-{	
+{
+	using namespace std;
 	key_type k = "help"; 
 	val_type v = "apple";
 	assign(k, v);
-	std::cout << data_ [k];
+	cout << data_ [k] << endl;
+	cout << endl;
+	
+	int myvar = 25;
+	void* val = &myvar;
+	int* val_ptr = (int*)val;
+	int apple = *val_ptr;
+	cout << myvar << endl;
+	cout << val << endl;
+	cout << apple << endl;
 }
 
 //boop
@@ -42,6 +52,8 @@ struct Cache::Impl {
 }
 */
 
+
+/*
 Cache::index_type my_hash_func(Cache::key_type key) {
 	return key[0];
 }
@@ -70,4 +82,4 @@ test_cache.set("my_key", static_cast<Cache::val_type>(data), 10);
 
 int size;
 p = test_cache.get("my_key", size)
-
+*/

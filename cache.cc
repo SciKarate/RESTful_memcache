@@ -2,6 +2,8 @@
 #include <iostream>
 #include <unordered_map>
 #include <string>
+#include <cstdint>
+#include <cstring>
 
 struct Cache::Impl {
 private:
@@ -9,11 +11,11 @@ private:
 	evictor_type evictor_;
 	hash_func hasher_;
 	index_type maxmem_;
-	std::unordered_map<std::string, const void*, hash_func> data_;
+	std::unordered_map<std::string, void*, hash_func> data_;
 	
 public:
 	Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
-	 : maxmem_(maxmem), evictor_(evictor),, memused_(0), data_(0, hasher_)
+	 : maxmem_(maxmem), evictor_(evictor), hasher_(hasher), memused_(0), data_(0, hasher_)
 	{
 	}
 
@@ -21,43 +23,43 @@ public:
 
 	void set(key_type key, val_type val, index_type size)
 	{
-			//these two lines for if unordered_map takes void*
-		//void* val_p = &val; //converts const void* to void*
-		//data_[key] = val_p; //sets key, val_p pair
 		if(memused_ >= maxmem_)
 		{
 			printf("this is where I would evict things\n");
 		}
-		data_[key] = val;
-
+		/*char* val_ptr = (char*)val; //cast val as real ptr
+		std::cout<<val_ptr<<std::endl;
+		char outt[size];
+		for(int i = 0; i < size; i++) //char outt = *val_ptr;
+		{
+			outt[i] = *(val_ptr + i);
+		}*/
+		void* val_ptr;
+		std::memcpy(val_ptr, val, size);
+		std::cout<< val_ptr <<std::endl;
+		//std::cout<<outt<<std::endl; //check successful copy
+		//void* outt_ptr = static_cast<void*>(outt); //save as void*
+		char* extractedboyo = (char*)val_ptr;
+		std::cout<< extractedboyo << std::endl;
+		data_[key] = val_ptr;
 		std::cout << key << std::endl;
 		std::cout << val << std::endl;
 		std::cout << data_[key] << std::endl;
-		std::cout << data_["testempty"] << std::endl;
+		printf("god is ded\n");
 		memused_ += 1; //somehow increase memused
 		//set key, value pair with key and val
 	}
 	
 	val_type get(key_type key, index_type& val_size) const
 	{
-			//these two lines for if unordered map takes void*
-			//also they don't work
-		//void* val_found = data_[key]; //gets void* from key
-		//val_type val_out = &val_found; //converts void* to const void*
-		//return data_[key]; //why does this not work??
+		//return data_[key];
+		//takes key and size of retrieved value
 		//return a pointer to key in array
 	}
 
 	void del(key_type key)
 	{
-		printf("let's test delete\n");
-		if(data_[key] != 0)
-		{
-			memused_ -=1;
-		}
-		//hash_func hasher = std::hash<std::string>();
-		//size_t hashed = hasher(key);
-		//if there's anything at hashed in array, delete it n
+		if(data_[key] != 0) {memused_ -= 1;}
 	}
 
 	index_type space_used() const
@@ -102,27 +104,33 @@ Cache::index_type Cache::space_used() const
 	return pImpl_ ->space_used();
 }
 
+
+
+
+struct MyHasher {
+	int data_;
+	MyHasher() : data_(0) {}
+
+	Cache::index_type operator()(Cache::key_type key) {
+		return key[0];
+	}
+};
+MyHasher hs;
+
 int main()
 {
-	Cache test_cache(10);
-	std::cout << test_cache.space_used() << std::endl;
-	test_cache.del("testempty");
+	Cache test_cache(100, [](){return 0;}, hs);
 
-	Cache::key_type k = "testkey";
-	Cache::val_type v = "why isn't this changing anything";
-	Cache::index_type i = 10;
-	test_cache.set(k,v,i);
-
-	std::cout << test_cache.space_used() << std::endl;
-	test_cache.del("testempty");
-	std::cout << test_cache.space_used() << std::endl;
-	test_cache.del("testkey");
-	std::cout << test_cache.space_used() << std::endl;
+	char v[10] = "abcdefghi";
+	//int v[10] = {1,2,3,4,5,6,7,8,9,10};
+	int x = 10; int* z = &x;
+	test_cache.set("my_key", static_cast<Cache::val_type>(v), sizeof(v));
+	test_cache.set("int_key", static_cast<Cache::val_type>(z), 1);
 }
 
 //boop
 /*
-unordered_map<std::string, void*, hash_func> my_table(0, hasher_;
+unordered_map<std::string, void*, hash_func> my_table(0, hasher_);
 hash_func hasher;
 hash_vale = hasher();
 std::hash<std::string> h;
