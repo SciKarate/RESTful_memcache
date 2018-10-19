@@ -26,6 +26,7 @@ public:
 		if(memused_ >= maxmem_)
 		{
 			printf("this is where I would evict things\n");
+			std::cout << memused_ << std::endl;
 		}
 		/*char* val_ptr = (char*)val; //cast val as real ptr
 		std::cout<<val_ptr<<std::endl;
@@ -34,32 +35,31 @@ public:
 		{
 			outt[i] = *(val_ptr + i);
 		}*/
-		void* val_ptr;
-		std::memcpy(val_ptr, val, size);
-		std::cout<< val_ptr <<std::endl;
+		//void* val_ptr;
+		//std::memcpy(val_ptr, val, size);
+		//std::cout<< val_ptr <<std::endl;
 		//std::cout<<outt<<std::endl; //check successful copy
 		//void* outt_ptr = static_cast<void*>(outt); //save as void*
-		char* extractedboyo = (char*)val_ptr;
-		std::cout<< extractedboyo << std::endl;
+		//char* extractedboyo = (char*)val_ptr;
+		//std::cout<< extractedboyo << std::endl;
 		data_[key] = val_ptr;
 		std::cout << key << std::endl;
 		std::cout << val << std::endl;
 		std::cout << data_[key] << std::endl;
-		printf("god is ded\n");
+		printf("god is ded\n\n");
 		memused_ += 1; //somehow increase memused
 		//set key, value pair with key and val
 	}
 	
 	val_type get(key_type key, index_type& val_size) const
 	{
-		//return data_[key];
 		//takes key and size of retrieved value
 		//return a pointer to key in array
 	}
 
 	void del(key_type key)
 	{
-		if(data_[key] != 0) {memused_ -= 1;}
+		if(data_[key] != 0) {memused_ -= 1; data_[key] = 0;}
 	}
 
 	index_type space_used() const
@@ -107,25 +107,22 @@ Cache::index_type Cache::space_used() const
 
 
 
-struct MyHasher {
-	int data_;
-	MyHasher() : data_(0) {}
-
-	Cache::index_type operator()(Cache::key_type key) {
-		return key[0];
-	}
-};
-MyHasher hs;
+Cache::index_type my_hash_func(Cache::key_type key) {
+	return key[0];
+}
 
 int main()
 {
-	Cache test_cache(100, [](){return 0;}, hs);
+	Cache test_cache(100, [](){return 0;}, my_hash_func);
 
 	char v[10] = "abcdefghi";
+	std::string s = "blorp!!";
+	std::string* sss = &s;
 	//int v[10] = {1,2,3,4,5,6,7,8,9,10};
 	int x = 10; int* z = &x;
-	test_cache.set("my_key", static_cast<Cache::val_type>(v), sizeof(v));
-	test_cache.set("int_key", static_cast<Cache::val_type>(z), 1);
+	test_cache.set("int_keya", static_cast<Cache::val_type>(z), sizeof(x));
+	test_cache.set("my_keyb", static_cast<Cache::val_type>(v), sizeof(v));
+	test_cache.set("str_keyc", static_cast<Cache::val_type>(sss), sizeof(s));
 }
 
 //boop
