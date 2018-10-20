@@ -42,6 +42,8 @@ public:
 		//void* outt_ptr = static_cast<void*>(outt); //save as void*
 		//char* extractedboyo = (char*)val_ptr;
 		//std::cout<< extractedboyo << std::endl;
+		void *val_ptr = malloc(size);
+		std::memcpy(val_ptr, val, size);
 		data_[key] = val_ptr;
 		std::cout << key << std::endl;
 		std::cout << val << std::endl;
