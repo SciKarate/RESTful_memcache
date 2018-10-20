@@ -19,38 +19,38 @@ public:
 	{
 	}
 
-	~Impl() = default;
+	~Impl() {for (auto kvpair : data_) {free(kvpair.second);}}
 
 	void set(key_type key, val_type val, index_type size)
 	{
-		if(memused_ >= maxmem_)
-		{
-			printf("this is where I would evict things\n");
-			std::cout << memused_ << std::endl;
-		}
 		void *val_ptr = malloc(size);
 		std::memcpy(val_ptr, val, size);
 		data_[key] = val_ptr;
-		std::cout << key << std::endl;
-		std::cout << val << std::endl;
-		std::cout << data_[key] << std::endl;
-		printf("setting some stuff\n\n");
-		memused_ += 1; //somehow increase memused
+		memused_ += sizeof(data_[key]); //somehow increase memused
+		if(memused_ > maxmem_)
+		{
+			del(data_.begin()->first);
+		}
 		//set key, value pair with key and val
 	}
 	
 	val_type get(key_type key, index_type& val_size)
 	{
 		void *data_ptr = data_[key];
-		std::cout << data_ptr << std::endl;
-		return data_ptr;
+		if(data_ptr != 0) {return data_ptr;}
+		else {return NULL;}
 		//takes key and size of retrieved value
 		//return a pointer to key in array
 	}
 
 	void del(key_type key)
 	{
-		if(data_[key] != 0) {memused_ -= 1; data_[key] = 0;}
+		if(data_[key] != 0)
+		{
+			memused_ -= sizeof(data_[key]);
+			free(data_[key]);
+			data_.erase(key);
+		}
 	}
 
 	index_type space_used() const
@@ -104,43 +104,31 @@ int main()
 {
 	Cache test_cache(100, [](){return 0;}, my_hash_func);
 
-	char v[10] = "abcdefghi";
-	std::string s = "blorp!!";
-	std::string* sss = &s;
+	char char_test[10] = "abcdefghi";
+	std::string string_test = "blorp!!";
+	std::string* string_test_ptr = &string_test;
 	//int v[10] = {1,2,3,4,5,6,7,8,9,10};
-	int x = 194; int* z = &x;
-	test_cache.set("int_keya", static_cast<Cache::val_type>(z), sizeof(x));
-	test_cache.set("my_keyb", static_cast<Cache::val_type>(v), sizeof(v));
-	test_cache.set("str_keyc", static_cast<Cache::val_type>(sss), sizeof(s));
-	
-	/*uint32_t asd = sizeof(x);
-	const void* fst = test_cache.get("int_keya", asd);
-	asd = sizeof(v);
-	const void* snd = test_cache.get("my_keyb", asd);
-	asd = sizeof(s);
-	const void* thd = test_cache.get("str_keyc", asd);
+	int int_test = 194;
+	int* int_test_ptr = &int_test;
 
-	int* iptr = (int*) fst;
+	test_cache.set("int_keya", static_cast<Cache::val_type>(int_test_ptr), sizeof(int_test));
+	test_cache.set("my_keyb", static_cast<Cache::val_type>(char_test), sizeof(char_test));
+	test_cache.set("str_keyc", static_cast<Cache::val_type>(string_test_ptr), sizeof(string_test));
+
+	uint32_t asd = sizeof(int);
+	int* iptr = (int*) test_cache.get("int_keya", asd);
 	std::cout << *iptr << std::endl; //WORKS!!
-	
-	char* cptr = (char*) snd;
+
+	asd = sizeof(char_test);
+	char* cptr = (char*) test_cache.get("my_keyb", asd);
 	std::cout << cptr << std::endl; //WORKS!!
+	
+	asd = sizeof(std::string);
+	std::string* sptr = (std::string*) test_cache.get("str_keyc", asd);
+	std::cout << *sptr << std::endl; //WORKS!!
 
-	std::string* sptr = (std::string*) thd;
-	std::cout << *sptr << std::endl; //WORKS!!*/
+	test_cache.del("int_keya");
+	test_cache.del("my_keyb");
+	test_cache.del("str_keyc");
 }
-
 //boop
-/*
-unordered_map<std::string, void*, hash_func> my_table(0, hasher_);
-hash_func hasher;
-hash_vale = hasher();
-std::hash<std::string> h;
-h();
-struct Cache::Impl {
-	unordered_map<std::string, void*, hash_func> data_;
-	...
-	Impl(maxmem, hasher, evictor)
-	: data_(0, hasher)
-}
-*/

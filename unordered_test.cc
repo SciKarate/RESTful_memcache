@@ -99,3 +99,17 @@ p = test_cache.get("my_key", size)
 		//void* outt_ptr = static_cast<void*>(outt); //save as void*
 		//char* extractedboyo = (char*)val_ptr;
 		//std::cout<< extractedboyo << std::endl;
+
+/*
+unordered_map<std::string, void*, hash_func> my_table(0, hasher_);
+hash_func hasher;
+hash_vale = hasher();
+std::hash<std::string> h;
+h();
+struct Cache::Impl {
+	unordered_map<std::string, void*, hash_func> data_;
+	...
+	Impl(maxmem, hasher, evictor)
+	: data_(0, hasher)
+}
+*/
