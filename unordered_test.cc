@@ -20,7 +20,7 @@ int main()
 	key_type k = "help"; 
 	val_type v = "apple";
 	assign(k, v);
-	cout << data_ [k] << endl;
+	cout << data_[k] << endl;
 	cout << endl;
 	
 	int myvar = 25;
@@ -83,3 +83,19 @@ test_cache.set("my_key", static_cast<Cache::val_type>(data), 10);
 int size;
 p = test_cache.get("my_key", size)
 */
+
+		/*
+		char* val_ptr = (char*)val; //cast val as real ptr
+		std::cout<<val_ptr<<std::endl;
+		char outt[size];
+		for(int i = 0; i < size; i++) //char outt = *val_ptr;
+		{
+			outt[i] = *(val_ptr + i);
+		}*/
+		//void* val_ptr;
+		//std::memcpy(val_ptr, val, size);
+		//std::cout<< val_ptr <<std::endl;
+		//std::cout<<outt<<std::endl; //check successful copy
+		//void* outt_ptr = static_cast<void*>(outt); //save as void*
+		//char* extractedboyo = (char*)val_ptr;
+		//std::cout<< extractedboyo << std::endl;

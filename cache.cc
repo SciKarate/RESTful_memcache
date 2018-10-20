@@ -28,33 +28,22 @@ public:
 			printf("this is where I would evict things\n");
 			std::cout << memused_ << std::endl;
 		}
-		/*char* val_ptr = (char*)val; //cast val as real ptr
-		std::cout<<val_ptr<<std::endl;
-		char outt[size];
-		for(int i = 0; i < size; i++) //char outt = *val_ptr;
-		{
-			outt[i] = *(val_ptr + i);
-		}*/
-		//void* val_ptr;
-		//std::memcpy(val_ptr, val, size);
-		//std::cout<< val_ptr <<std::endl;
-		//std::cout<<outt<<std::endl; //check successful copy
-		//void* outt_ptr = static_cast<void*>(outt); //save as void*
-		//char* extractedboyo = (char*)val_ptr;
-		//std::cout<< extractedboyo << std::endl;
 		void *val_ptr = malloc(size);
 		std::memcpy(val_ptr, val, size);
 		data_[key] = val_ptr;
 		std::cout << key << std::endl;
 		std::cout << val << std::endl;
 		std::cout << data_[key] << std::endl;
-		printf("god is ded\n\n");
+		printf("setting some stuff\n\n");
 		memused_ += 1; //somehow increase memused
 		//set key, value pair with key and val
 	}
 	
-	val_type get(key_type key, index_type& val_size) const
+	val_type get(key_type key, index_type& val_size)
 	{
+		void *data_ptr = data_[key];
+		std::cout << data_ptr << std::endl;
+		return data_ptr;
 		//takes key and size of retrieved value
 		//return a pointer to key in array
 	}
@@ -107,8 +96,6 @@ Cache::index_type Cache::space_used() const
 }
 
 
-
-
 Cache::index_type my_hash_func(Cache::key_type key) {
 	return key[0];
 }
@@ -121,10 +108,26 @@ int main()
 	std::string s = "blorp!!";
 	std::string* sss = &s;
 	//int v[10] = {1,2,3,4,5,6,7,8,9,10};
-	int x = 10; int* z = &x;
+	int x = 194; int* z = &x;
 	test_cache.set("int_keya", static_cast<Cache::val_type>(z), sizeof(x));
 	test_cache.set("my_keyb", static_cast<Cache::val_type>(v), sizeof(v));
 	test_cache.set("str_keyc", static_cast<Cache::val_type>(sss), sizeof(s));
+	
+	/*uint32_t asd = sizeof(x);
+	const void* fst = test_cache.get("int_keya", asd);
+	asd = sizeof(v);
+	const void* snd = test_cache.get("my_keyb", asd);
+	asd = sizeof(s);
+	const void* thd = test_cache.get("str_keyc", asd);
+
+	int* iptr = (int*) fst;
+	std::cout << *iptr << std::endl; //WORKS!!
+	
+	char* cptr = (char*) snd;
+	std::cout << cptr << std::endl; //WORKS!!
+
+	std::string* sptr = (std::string*) thd;
+	std::cout << *sptr << std::endl; //WORKS!!*/
 }
 
 //boop
