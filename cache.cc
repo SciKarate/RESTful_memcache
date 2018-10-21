@@ -15,6 +15,7 @@ public:
 	Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
 	 : maxmem_(maxmem), evictor_(evictor), hasher_(hasher), memused_(0), data_(0, hasher_)
 	{
+		data_.max_load_factor(0.5);
 	}
 
 	~Impl() {for (auto kvpair : data_) {del(kvpair.first);}} //free all ptrs

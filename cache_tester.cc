@@ -1,6 +1,5 @@
 #include <cache.hh>
 #include <iostream>
-
 //build with "g++ cache.cc cache_tester.cc"
 
 int intcast(Cache::val_type vptr) //takes void ptr to int, returns int
