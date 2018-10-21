@@ -1,9 +1,7 @@
 #include <cache.hh>
-#include <iostream>
 #include <unordered_map>
-#include <string>
-#include <cstdint>
-#include <cstring>
+#include <cstring> //for "std::memcpy" in set
+#include <iostream>
 
 struct Cache::Impl {
 private:
@@ -19,16 +17,18 @@ public:
 	{
 	}
 
-	~Impl() {for (auto kvpair : data_) {free(kvpair.second);}}
+	~Impl() {for (auto kvpair : data_) {del(kvpair.first);}}
 
 	void set(key_type key, val_type val, index_type size)
 	{
+		if(data_[key] != 0) {free(data_[key]);}
 		void *val_ptr = malloc(size);
 		std::memcpy(val_ptr, val, size);
 		data_[key] = val_ptr;
 		memused_ += sizeof(data_[key]); //somehow increase memused
 		if(memused_ > maxmem_)
 		{
+			std::cout << "evicting key...\t\t" << (data_.begin()->first) << std::endl;
 			del(data_.begin()->first);
 		}
 		//set key, value pair with key and val
@@ -36,9 +36,8 @@ public:
 	
 	val_type get(key_type key, index_type& val_size)
 	{
-		void *data_ptr = data_[key];
-		if(data_ptr != 0) {return data_ptr;}
-		else {return NULL;}
+		if(data_[key] != 0) {return data_[key];}
+		else {data_.erase(key); return NULL;}
 		//takes key and size of retrieved value
 		//return a pointer to key in array
 	}
@@ -94,41 +93,3 @@ Cache::index_type Cache::space_used() const
 {
 	return pImpl_ ->space_used();
 }
-
-
-Cache::index_type my_hash_func(Cache::key_type key) {
-	return key[0];
-}
-
-int main()
-{
-	Cache test_cache(100, [](){return 0;}, my_hash_func);
-
-	char char_test[10] = "abcdefghi";
-	std::string string_test = "blorp!!";
-	std::string* string_test_ptr = &string_test;
-	//int v[10] = {1,2,3,4,5,6,7,8,9,10};
-	int int_test = 194;
-	int* int_test_ptr = &int_test;
-
-	test_cache.set("int_keya", static_cast<Cache::val_type>(int_test_ptr), sizeof(int_test));
-	test_cache.set("my_keyb", static_cast<Cache::val_type>(char_test), sizeof(char_test));
-	test_cache.set("str_keyc", static_cast<Cache::val_type>(string_test_ptr), sizeof(string_test));
-
-	uint32_t asd = sizeof(int);
-	int* iptr = (int*) test_cache.get("int_keya", asd);
-	std::cout << *iptr << std::endl; //WORKS!!
-
-	asd = sizeof(char_test);
-	char* cptr = (char*) test_cache.get("my_keyb", asd);
-	std::cout << cptr << std::endl; //WORKS!!
-	
-	asd = sizeof(std::string);
-	std::string* sptr = (std::string*) test_cache.get("str_keyc", asd);
-	std::cout << *sptr << std::endl; //WORKS!!
-
-	test_cache.del("int_keya");
-	test_cache.del("my_keyb");
-	test_cache.del("str_keyc");
-}
-//boop
