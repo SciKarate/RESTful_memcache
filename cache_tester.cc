@@ -89,6 +89,5 @@ int main()
 	cout << "Stored blorp!!:\t\t" << strcast(test_cache.get("str_keyc", sz)) << endl;
 
 	cout << "There's still a string stored in the map, but I bet you there's no memory leaks!" << endl;
-	return 0;
 }
 //boop

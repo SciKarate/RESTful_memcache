@@ -1,7 +1,7 @@
 #include <cache.hh>
 #include <unordered_map>
 #include <cstring> //for "std::memcpy" in set
-#include <iostream> //for "evicting key..." printout
+//#include <iostream> //for "evicting key..." printout
 
 struct Cache::Impl {
 private:
@@ -22,7 +22,7 @@ public:
 	{
 		for (auto kvpair : data_) //free all ptrs
 		{
-			std::cout << "freeing leftover key\t" << kvpair.first << std::endl;
+			//std::cout << "freeing leftover key\t" << kvpair.first << std::endl;
 			free(data_[kvpair.first]);/*del(kvpair.first);*/
 		}
 	}
@@ -36,7 +36,7 @@ public:
 		memused_ += sizeof(data_[key]); 		//increase memused_ by its size
 		if(memused_ > maxmem_)	// if we need to do some eviction...
 		{
-			std::cout << "evicting key...\t\t" << (data_.begin()->first) << std::endl;
+			//std::cout << "evicting key...\t\t" << (data_.begin()->first) << std::endl;
 			del(data_.begin()->first); //delete the first key in data_
 		}
 	}
