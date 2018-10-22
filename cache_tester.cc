@@ -34,7 +34,7 @@ Cache::index_type my_hash_func(Cache::key_type key)
 }
 
 int main()
-{
+{	//set mem to 32 for UNIX, 16 for Win for tests to evict as expected
 	Cache test_cache(32, [](){return 0;}, my_hash_func); //create a cache
 
 	//create some test variables to store
@@ -72,7 +72,7 @@ int main()
 	
 	sz = sizeof(string);
 	cout << "Evicted blorp!!:\t" << strcast(test_cache.get("str_keyc", sz)) << endl;
-
+	
 	test_cache.del("int_keya");
 	test_cache.del("my_keyb");
 	test_cache.del("str_keyc");
@@ -82,13 +82,13 @@ int main()
 
 	sz = sizeof(char_test);
 	cout << "Deleted chararr:\t" << chararrcast(test_cache.get("my_keyb", sz)) << endl;
-
+	
 	sz = sizeof(string);
 	cout << "Deleted, evicted str:\t" << strcast(test_cache.get("str_keyc", sz)) << endl;
-	sz = sizeof(string);
 	test_cache.set("str_keyc", static_cast<Cache::val_type>(string_test_ptr), sizeof(string_test));
 	cout << "Stored blorp!!:\t\t" << strcast(test_cache.get("str_keyc", sz)) << endl;
 
 	cout << "There's still a string stored in the map, but I bet you there's no memory leaks!" << endl;
+	return 0;
 }
 //boop

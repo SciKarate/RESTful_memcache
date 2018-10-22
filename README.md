@@ -11,4 +11,21 @@ Part 5: cache.cc uses an unordered_map, which includes the built-in function voi
 	"Rehashes are automatically performed by the container whenever its load factor is going to surpass its max_load_factor in an operation." -cplusplus.com
 The max_load_factor is set to 0.5 in cache.cc, on line 18, as per instruction.
 
-Part 6: Eviction policy is written in cache.cc
+Part 6: Eviction policy is written in cache.cc, within "set"
+
+
+
+
+
+Things I can't figure out:
+	* How to keep track of the size of the stored values when deleting, since del is only passed a key and not a size. I know how to increment memused_ correctly for set, but not for del. As a result, I have to do both incorrectly. Currently, I just increment and decrement by the size of the pointers I'm storing (8 in UNIX, 4 in Windows.)
+
+	* How is get supposed to work, exactly? Should it be returning void pointers or values? Is my current solution (returning void pointers and then casting them manually in main) correct? 
+
+	* What is index_type& val_size for?
+
+	* Is it normal that I need an individual function for each cast, or is there a universal method I just haven't found after a week of searching?
+
+	* Is my implementation of FIFO correct? Maybe?
+
+	* How can I get my Cache to have a default hash function without having to declare a new function within Cache?

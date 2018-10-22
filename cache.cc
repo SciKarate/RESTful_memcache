@@ -18,7 +18,14 @@ public:
 		data_.max_load_factor(0.5);
 	}
 
-	~Impl() {for (auto kvpair : data_) {del(kvpair.first);}} //free all ptrs
+	~Impl()
+	{
+		for (auto kvpair : data_) //free all ptrs
+		{
+			std::cout << "freeing leftover key\t" << kvpair.first << std::endl;
+			free(data_[kvpair.first]);/*del(kvpair.first);*/
+		}
+	}
 
 	void set(key_type key, val_type val, index_type size)
 	{
@@ -27,7 +34,6 @@ public:
 		std::memcpy(val_ptr, val, size);		//and deep-copy to it.
 		data_[key] = val_ptr;					//then store it in data_, and...
 		memused_ += sizeof(data_[key]); 		//increase memused_ by its size
-
 		if(memused_ > maxmem_)	// if we need to do some eviction...
 		{
 			std::cout << "evicting key...\t\t" << (data_.begin()->first) << std::endl;
@@ -50,8 +56,8 @@ public:
 		{
 			memused_ -= sizeof(data_[key]);	//decrement memuse
 			free(data_[key]);				//free pointer to data
-			data_.erase(key);				//make data_ forget the key.
 		}
+		data_.erase(key);				//make data_ forget the key.
 	}
 
 	index_type space_used() const
