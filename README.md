@@ -18,6 +18,7 @@ Part 6: Eviction policy is written in cache.cc, within "set"
 
 
 Things I can't figure out:
+
 	* How to keep track of the size of the stored values when deleting, since del is only passed a key and not a size. I know how to increment memused_ correctly for set, but not for del. As a result, I have to do both incorrectly. Currently, I just increment and decrement by the size of the pointers I'm storing (8 in UNIX, 4 in Windows.)
 
 	* How is get supposed to work, exactly? Should it be returning void pointers or values? Is my current solution (returning void pointers and then casting them manually in main) correct? 
@@ -26,6 +27,6 @@ Things I can't figure out:
 
 	* Is it normal that I need an individual function for each cast, or is there a universal method I just haven't found after a week of searching?
 
-	* Is my implementation of FIFO correct? Maybe?
+	* Is my implementation of FIFO correct? I don't think so, but I can't figure out how to keep track of what the first item in the unordered_map is without having to modify their keys, which would make them impossible to retrieve.
 
 	* How can I get my Cache to have a default hash function without having to declare a new function within Cache?
