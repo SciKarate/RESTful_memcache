@@ -101,32 +101,57 @@ void cache_test()
 	cout << "There's still a string stored in the map, but I bet you there's no memory leaks!" << endl;
 }
 
-void cache_test_bool()
+void cache_test_cacheflush()
 {
+    using namespace std;
     Cache test_cache(41, [](){return 0;}, my_hash_func); //create a cache
     bool a = false;
     bool* aptr = &a;
     test_cache.set("bool_key", static_cast<Cache::val_type>(aptr),sizeof(a));
-    std::cout << "Storing boolean..." << "\t\t" << test_cache.space_used() << std::endl;
+    cout << "Storing boolean..." << "\t\t" << test_cache.space_used() <<endl;
 
     double b = 5287.47463;
     double* bptr = &b;
     test_cache.set("double_key", static_cast<Cache::val_type>(bptr),sizeof(b));
-    std::cout << "Storing double..." << "\t\t" << test_cache.space_used() << std::endl;
+    cout << "Storing double..." << "\t\t" << test_cache.space_used() <<endl;
 
     int intarr_test[10] = {1,2,3,4,5,6,7,8,9,10};
     test_cache.set("intarr_keyd", static_cast<Cache::val_type>(intarr_test), sizeof(intarr_test));
-    std::cout << "Storing int array..." << "\t\t" << test_cache.space_used() << std::endl;
+    cout << "Storing int array..." << "\t\t" << test_cache.space_used() <<endl;
 
 
+}
+
+void cache_test_samekey()
+{
+    uint32_t sz;
+    using namespace std;
+    Cache test_cache(82, [](){return 0;}, my_hash_func); //create a cache
+    int a = 12;
+    int* aptr = &a;
+    test_cache.set("int_key", static_cast<Cache::val_type>(aptr),sizeof(a));
+    cout << "Storing int..." << "\t\t" << test_cache.space_used() <<endl;
+
+    sz = sizeof(a);
+    cout << "Stored a!!:\t\t" << intcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
+
+    string b = "apple";
+    string* bptr = &b;
+
+    cout<< "this is size of b:\t\t"<< sizeof(b)<<endl;
+
+    test_cache.set("int_key", static_cast<Cache::val_type>(bptr),sizeof(b));
+    cout << "Storing string..." << "\t\t" << test_cache.space_used() <<endl;
+
+    sz = sizeof(b);
+    cout << "Stored b!!:\t\t" << strcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
 
 
 }
 
 
-
 int main()
 {
-	cache_test_bool();
+	cache_test_samekey();
 }
 //boop
