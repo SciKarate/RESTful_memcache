@@ -119,7 +119,11 @@ public:
 		*keyp = key;
 
 		if(data_[key] != 0)
-			{free(data_[key]); evictor_queue.rem(key); memused_ -= size;} //free existing ptr if editing
+		{
+			free(data_[key]);	//free existing ptr if editing
+			uint32_t sz = evictor_queue.rem(key);
+			memused_ -= sz;
+		}
 		void *val_ptr = malloc(size);			//malloc an empty pointer...
 		std::memcpy(val_ptr, val, size);		//and deep-copy to it.
 		data_[key] = val_ptr;					//then store it in data_, and...
