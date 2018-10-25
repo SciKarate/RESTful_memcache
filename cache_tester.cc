@@ -1,5 +1,6 @@
 #include <cache.hh>
 #include <iostream>
+#include <functional>
 //build with "g++ cache.cc cache_tester.cc"
 
 int intcast(Cache::val_type vptr) //takes void ptr to int, returns int
@@ -30,7 +31,8 @@ std::string chararrcast(Cache::val_type vptr) //takes void ptr to char array, re
 
 Cache::index_type my_hash_func(Cache::key_type key)
 {
-	return key[0];
+	std::hash<std::string> hashy;
+	return hashy(key);
 }
 
 void cache_test()
