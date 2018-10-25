@@ -34,8 +34,8 @@ Cache::index_type my_hash_func(Cache::key_type key)
 }
 
 void cache_test()
-{	//set mem to 32 for UNIX, 16 for Win for tests to evict as expected
-	Cache test_cache(32, [](){return 0;}, my_hash_func); //create a cache
+{
+	Cache test_cache(38, [](){return 0;}, my_hash_func); //create a cache
 
 	//create some test variables to store
 	char char_test[10] = "abcdefghi";
