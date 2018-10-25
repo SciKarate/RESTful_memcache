@@ -1,5 +1,6 @@
 #include <cache.hh>
 #include <iostream>
+#include <functional>
 //build with "g++ cache.cc cache_tester.cc"
 
 int intcast(Cache::val_type vptr) //takes void ptr to int, returns int
@@ -30,12 +31,13 @@ std::string chararrcast(Cache::val_type vptr) //takes void ptr to char array, re
 
 Cache::index_type my_hash_func(Cache::key_type key)
 {
-	return key[0];
+	std::hash<std::string> hashy;
+	return hashy(key);
 }
 
 void cache_test()
-{	//set mem to 32 for UNIX, 16 for Win for tests to evict as expected
-	Cache test_cache(32, [](){return 0;}, my_hash_func); //create a cache
+{
+	Cache test_cache(38, [](){return 0;}, my_hash_func); //create a cache
 
 	//create some test variables to store
 	char char_test[10] = "abcdefghi";

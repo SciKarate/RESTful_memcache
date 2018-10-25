@@ -16,18 +16,6 @@ public:
 	node *head;
 	Queue()
 		{head = NULL;}
-
-	/*~Queue()
-	{
-		node *prev;
-		node *curr;
-		while(curr != NULL)
-		{
-			prev = curr;
-			curr = curr->next;
-			delete prev;
-		}
-	}*/
 	
 	void enqueue(std::string* val, uint32_t sz)
 	{
@@ -117,16 +105,24 @@ public:
 	~Impl()
 	{
 		for (auto kvpair : data_) //free all ptrs
-			{free(data_[kvpair.first]);/*del(kvpair.first);*/}
+		{
+			free(data_[kvpair.first]);
+			evictor_queue.rem(kvpair.first);
+			/*del(kvpair.first);*/
+		}
 	}
 
 	void set(key_type key, val_type val, index_type size)
 	{
+<<<<<<< HEAD
 		if(size>maxmem_)
 		{
 			return;
 		}
 
+=======
+		if(size > maxmem_) {return;}
+>>>>>>> c04a5ce3e7d0e2adf9c5d1ba750ed824e9e7ce81
 		std::string* keyp = new std::string;
 		*keyp = key;
 
