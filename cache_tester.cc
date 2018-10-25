@@ -103,7 +103,7 @@ void cache_test()
 
 void cache_test_bool()
 {
-    Cache test_cache(32, [](){return 0;}, my_hash_func); //create a cache
+    Cache test_cache(41, [](){return 0;}, my_hash_func); //create a cache
     bool a = false;
     bool* aptr = &a;
     test_cache.set("bool_key", static_cast<Cache::val_type>(aptr),sizeof(a));
