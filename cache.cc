@@ -122,6 +122,11 @@ public:
 
 	void set(key_type key, val_type val, index_type size)
 	{
+		if(size>maxmem_)
+		{
+			return;
+		}
+
 		std::string* keyp = new std::string;
 		*keyp = key;
 
