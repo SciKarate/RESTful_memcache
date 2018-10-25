@@ -1,7 +1,102 @@
 #include <cache.hh>
 #include <unordered_map>
 #include <cstring> //for "std::memcpy" in set
-//#include <iostream> //for "evicting key..." printout
+#include <iostream> //for queue.display
+
+struct node //node for Queue
+{
+	std::string* value;
+	uint32_t size;
+	node *next;
+};
+
+class Queue //Queue for evictor
+{
+public:
+	node *head;
+	Queue()
+		{head = NULL;}
+
+	/*~Queue()
+	{
+		node *prev;
+		node *curr;
+		while(curr != NULL)
+		{
+			prev = curr;
+			curr = curr->next;
+			delete prev;
+		}
+	}*/
+	
+	void enqueue(std::string* val, uint32_t sz)
+	{
+		node *temp = new node;
+		temp->value = val;
+		temp->size = sz;
+		temp->next = NULL;
+		if(head == NULL)
+			{head = temp;}
+		else
+		{
+			node *traverse;
+			traverse = head;
+			while(traverse->next != NULL)
+				{traverse = traverse->next;}
+			traverse->next = temp;
+		}
+	}
+
+	uint32_t rem(std::string val)
+	{
+		node *curr;
+		node *prev;
+		curr = head;
+		uint32_t out;
+		while((curr->next != NULL) && (*curr->value != val))
+		{
+			prev = curr;
+			curr = curr->next;
+		}
+		if(*curr->value != val) {return 0;}
+		else if (curr == head)
+		{
+			out = curr->size;
+			head = curr->next;
+			delete curr->value;
+			delete curr;
+			return out;
+		}
+		else
+		{
+			out = curr->size;
+			prev->next = curr->next;
+			delete curr->value;
+			delete curr;
+			return out;
+		}
+	}
+
+	void dequeue()
+	{
+		node *save;
+		save = head;
+		head = save->next;
+		delete save;
+	}
+
+	void display()
+	{
+		node *traverse;
+		traverse = head;
+		while(traverse != NULL)
+		{
+			std::cout << traverse->size << "\t" << traverse->value << "\t" << *traverse->value << std::endl;
+			traverse = traverse->next;
+		}
+		std::cout << std::endl;
+	}
+};
 
 struct Cache::Impl {
 private:
@@ -10,6 +105,7 @@ private:
 	hash_func hasher_;
 	index_type maxmem_;
 	std::unordered_map<std::string, void*, hash_func> data_;
+	Queue evictor_queue;
 	
 public:
 	Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
@@ -21,31 +117,34 @@ public:
 	~Impl()
 	{
 		for (auto kvpair : data_) //free all ptrs
-		{
-			//std::cout << "freeing leftover key\t" << kvpair.first << std::endl;
-			free(data_[kvpair.first]);/*del(kvpair.first);*/
-		}
+			{free(data_[kvpair.first]);/*del(kvpair.first);*/}
 	}
 
 	void set(key_type key, val_type val, index_type size)
 	{
-		if(data_[key] != 0) {free(data_[key]);} //free existing ptr if editing
+		std::string* keyp = new std::string;
+		*keyp = key;
+
+		if(data_[key] != 0)
+			{free(data_[key]); evictor_queue.rem(key); memused_ -= size;} //free existing ptr if editing
 		void *val_ptr = malloc(size);			//malloc an empty pointer...
 		std::memcpy(val_ptr, val, size);		//and deep-copy to it.
 		data_[key] = val_ptr;					//then store it in data_, and...
-		memused_ += sizeof(data_[key]); 		//increase memused_ by its size
-		if(memused_ > maxmem_)	// if we need to do some eviction...
+		memused_ += size; 						//increase memused_ by its size
+		evictor_queue.enqueue(keyp, size); 		//enqueue a pointer to key
+
+		while(memused_ > maxmem_)	// if we need to do some eviction...
 		{
-			//std::cout << "evicting key...\t\t" << (data_.begin()->first) << std::endl;
-			del(data_.begin()->first); //delete the first key in data_
+			key_type header = *(evictor_queue.head->value);
+			//std::cout << "evicting key...\t\t" << (header) << std::endl;
+			del(header); //delete the first key in data_
 		}
 	}
 	
 	val_type get(key_type key, index_type& val_size)
 	{
 		if(data_[key] != 0) {return data_[key];}//fetch key if exists.
-		else {data_.erase(key); return NULL;} 	//if key is nonexistent,
-												//make sure we don't keep it!
+		else {data_.erase(key); return NULL;} 	//if key is nonexistent, make sure we don't keep it!
 		//takes key and size of retrieved value
 		//return a pointer to key in array
 	}
@@ -54,7 +153,8 @@ public:
 	{
 		if(data_[key] != 0)
 		{
-			memused_ -= sizeof(data_[key]);	//decrement memuse
+			uint32_t sz = evictor_queue.rem(key);
+			memused_ -= sz;	//decrement memuse
 			free(data_[key]);				//free pointer to data
 		}
 		data_.erase(key);				//make data_ forget the key.
