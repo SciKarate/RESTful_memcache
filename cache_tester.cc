@@ -135,6 +135,18 @@ void cache_test_samekey()
     sz = sizeof(a);
     cout << "Stored a!!:\t\t" << intcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
 
+    int c = 13;
+    int* cptr = &c;
+    test_cache.set("int_key", static_cast<Cache::val_type>(cptr),sizeof(c));
+    cout << "Storing int..." << "\t\t" << test_cache.space_used() <<endl;
+
+    sz = sizeof(c);
+    cout << "Stored c!!:\t\t" << intcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
+    //successfully replaces first int with second if samekey is used
+
+
+
+
     string b = "apple";
     string* bptr = &b;
 
