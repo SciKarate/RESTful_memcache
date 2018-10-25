@@ -135,10 +135,6 @@ void cache_test_samekey()
     sz = sizeof(a);
     cout << "Stored a!!:\t\t" << intcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
 
-
-
-
-
     string b = "apple";
     string* bptr = &b;
 
@@ -158,12 +154,16 @@ void cache_test_samekey()
 
     sz = sizeof(c);
     cout << "Stored c!!:\t\t" << intcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
-
 }
 
 
 int main()
 {
+	std::cout << "Test flushing the cache" << std::endl;
+	cache_test_cacheflush();
+	std::cout << "\n\nTest assigning different datatypes to the same key" << std::endl;
 	cache_test_samekey();
+	std::cout << "\n\nComprehensive test of all kinds of things" << std::endl;
+	cache_test();
 }
 //boop
