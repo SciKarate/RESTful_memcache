@@ -126,13 +126,15 @@ void cache_test_samekey()
 {
     uint32_t sz;
     using namespace std;
-    Cache test_cache(82, [](){return 0;}, my_hash_func); //create a cache
+
+    int cache_size = 82;
+    Cache test_cache(cache_size, [](){return 0;}, my_hash_func); //create a cache
+    cout<<"Size of cache:\t\t"<<cache_size<<endl;
     int a = 12;
     int* aptr = &a;
     test_cache.set("int_key", static_cast<Cache::val_type>(aptr),sizeof(a));
     cout << "Storing int..." << "\t\t" << test_cache.space_used() <<endl;
 
-    sz = sizeof(a);
     cout << "Stored a!!:\t\t" << intcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
 
     string b = "apple";
@@ -143,7 +145,6 @@ void cache_test_samekey()
     test_cache.set("int_key", static_cast<Cache::val_type>(bptr),sizeof(b));
     cout << "Storing string..." << "\t\t" << test_cache.space_used() <<endl;
 
-    sz = sizeof(b);
     cout << "Stored b!!:\t\t" << strcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
     //successfully replaces int with a string if same key is used
 
@@ -152,18 +153,101 @@ void cache_test_samekey()
     test_cache.set("int_key", static_cast<Cache::val_type>(cptr),sizeof(c));
     cout << "Storing int..." << "\t\t" << test_cache.space_used() <<endl;
 
-    sz = sizeof(c);
     cout << "Stored c!!:\t\t" << intcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
+}
+
+
+//tests attempts to query empty cache
+void cache_test_emptyquery()
+{
+	uint32_t sz;
+    using namespace std;
+    int cache_size = 32;
+    Cache test_cache(cache_size, [](){return 0;}, my_hash_func); //create a cache
+
+    //cout<<"Size of cahce:\t\t"<<cache_size<<endl;
+
+    //quering someting that doesn't exist
+    sz = sizeof(int);
+	cout << "Nonexistent int:\t\t" << intcast(test_cache.get("int_keya", sz)) << "\t\t" << test_cache.space_used() << endl;
+}
+
+//test attempts to query a nonexistent key in non empty cache
+void cache_test_wrongquery()
+{
+	uint32_t sz;
+    using namespace std;
+    int cache_size = 32;
+    Cache test_cache(cache_size, [](){return 0;}, my_hash_func); //create a cache
+
+    int a = 12;
+    int* aptr = &a;
+    test_cache.set("int_keyA", static_cast<Cache::val_type>(aptr),sizeof(a));
+    cout << "Storing int..." << "\t\t" << test_cache.space_used() <<endl;
+
+    cout << "Stored a?!:\t\t" << intcast(test_cache.get("int_keyB", sz)) << "\t\t" << test_cache.space_used() << endl;
+
+}
+//test querying a key after it's been deleted
+void cache_test_delquery()
+{
+	uint32_t sz;
+    using namespace std;
+    int cache_size = 32;
+    Cache test_cache(cache_size, [](){return 0;}, my_hash_func);
+
+    int a = 12;
+    int* aptr = &a;
+    test_cache.set("int_keya", static_cast<Cache::val_type>(aptr),sizeof(a));
+    cout << "Storing int..." << "\t\t" << test_cache.space_used() <<endl;
+
+    test_cache.del("int_keya");
+
+    cout << "deleted int:\t\t" << intcast(test_cache.get("int_keya", sz)) << "\t\t" << test_cache.space_used() << endl;
+
+}
+
+//test querying a key after its been evicted
+void cache_test_evictedquery()
+{
+	uint32_t sz;
+	//~copypasta cacheflush
+	using namespace std;
+    Cache test_cache(41, [](){return 0;}, my_hash_func); //create a cache
+    bool a = false;
+    bool* aptr = &a;
+    test_cache.set("bool_key", static_cast<Cache::val_type>(aptr),sizeof(a));
+    cout << "Storing boolean..." << "\t\t" << test_cache.space_used() <<endl;
+
+    int intarr_test[10] = {1,2,3,4,5,6,7,8,9,10};
+    test_cache.set("intarr_keyd", static_cast<Cache::val_type>(intarr_test), sizeof(intarr_test));
+    cout << "Storing int array..." << "\t\t" << test_cache.space_used() <<endl;
+
+    cout << "query evicted bool!:\t\t" << intcast(test_cache.get("bool", sz)) << "\t\t" << test_cache.space_used() << endl;
+
+
 }
 
 
 int main()
 {
-	std::cout << "Test flushing the cache" << std::endl;
+	/*std::cout << "Test flushing the cache" << std::endl;
 	cache_test_cacheflush();
 	std::cout << "\n\nTest assigning different datatypes to the same key" << std::endl;
 	cache_test_samekey();
 	std::cout << "\n\nComprehensive test of all kinds of things" << std::endl;
 	cache_test();
+	
+	std::cout << "Testing querying empty cache" << std::endl;
+	cache_test_emptyquery();
+	std::cout << "Testing invalid query in nonempty cache" << std::endl;
+	cache_test_wrongquery();
+	
+	std::cout << "Testing quering deleted item" << std::endl;
+	cache_test_delquery();
+	*/
+	std::cout << "Testing quering evicted item" << std::endl;
+	cache_test_evictedquery();
+
 }
 //boop
