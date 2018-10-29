@@ -77,6 +77,7 @@ uint32_t cache_test_samekey(int casz, Cache::val_type aptr, Cache::val_type bptr
     return size_sum;
 }
 
+//stores int pointer, then querries it
 uint32_t basic_int_set_get(Cache::val_type ptr, uint32_t sz)
 {
 	Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
@@ -86,6 +87,7 @@ uint32_t basic_int_set_get(Cache::val_type ptr, uint32_t sz)
     return outint;
 }
 
+//stores string pointer, then querries it
 std::string basic_str_set_get(Cache::val_type ptr, uint32_t sz)
 {
     Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
@@ -95,6 +97,7 @@ std::string basic_str_set_get(Cache::val_type ptr, uint32_t sz)
     return outstr;
 }
 
+//stores pointer, evicts it, then querries it
 uint32_t basic_evict(Cache::val_type ptr, uint32_t sz)
 {
     Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
@@ -107,6 +110,7 @@ uint32_t basic_evict(Cache::val_type ptr, uint32_t sz)
     return outint;
 }
 
+//stores pointer, deletes, then queries it
 uint32_t basic_delete(Cache::val_type ptr, uint32_t sz)
 {
     Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
@@ -139,3 +143,6 @@ TEST_CASE( "Factorials are computed" ) {
     REQUIRE(cache_test_cacheflush((as+bs+1), ap, bp, fp, as, bs, fs) == as+bs);
     REQUIRE(cache_test_samekey((as+bs+fs), ap, bp, fp, as, bs, fs) == as+bs+fs);
 }
+//delete key from brand new cache
+//store, evict, then try and delete
+//store keya, overwrite with keyb (evicted), overwrite keyb with keya, get keya
