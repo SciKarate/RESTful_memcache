@@ -204,7 +204,6 @@ TEST_CASE( "Check eviction and deletion functionality")
     REQUIRE(store_evict_delete(fp,fs) == (fs + (sizeof(int) * 2)));
     REQUIRE(new_cache_delete() =="cache is not broken!");
     std::cout << "\n";
-
 }
 
 TEST_CASE( "Checks niche functionality" )
