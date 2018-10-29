@@ -228,7 +228,7 @@ TEST_CASE( "Check eviction and deletion functionality")
         std::cout << "\n";
     }
     SECTION( "store a key, evict it, then store it again")
-    {   //check that mem after firt store + mem after second store = 2size
+    {   //check that mem after firt store + mem after third store = 2size
         REQUIRE(store_evict_store(ap,as) == (as * 2));
         REQUIRE(store_evict_store(bp,bs) == (bs * 2));
         REQUIRE(store_evict_store(fp,fs) == (fs * 2));
@@ -260,14 +260,14 @@ TEST_CASE( "Checks niche functionality" )
 	int as = sizeof(a); int bs = sizeof(b); int fs = sizeof(f);
 
     std::cout << "NICHE TEST CASES" << std::endl;
-    SECTION( "test various type assignment to same key" )
-    {
-        REQUIRE(cache_test_samekey((as+bs+fs), ap, bp, fp, as, bs, fs) == as+bs+fs);
-        std::cout << "\n";
-    }
     SECTION( "test what happens when we store a key bigger than cache")
     {
         REQUIRE(cache_test_cacheflush((as+bs+1), ap, bp, fp, as, bs, fs) == as+bs);
+        std::cout << "\n";
+    }
+    SECTION( "test various type assignment to same key" )
+    {
+        REQUIRE(cache_test_samekey((as+bs+fs), ap, bp, fp, as, bs, fs) == as+bs+fs);
         std::cout << "\n";
     }
 }
