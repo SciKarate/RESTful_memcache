@@ -1,3 +1,5 @@
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include <catch.hpp>
 #include <cache.hh>
 #include <iostream>
 #include <functional>
@@ -34,136 +36,56 @@ Cache::index_type my_hash_func(Cache::key_type key)
 	std::hash<std::string> hashy;
 	return hashy(key);
 }
-
-void cache_test()
-{
-	Cache test_cache(38, [](){return 0;}, my_hash_func); //create a cache
-
-	//create some test variables to store
-	char char_test[10] = "abcdefghi";
-	std::string string_test = "blorp!!";
-	std::string* string_test_ptr = &string_test;
-	int int_test = 194;
-	int* int_test_ptr = &int_test;
-	int int_test2 = 172;
-	int* int_test_ptr2 = &int_test2;
-
-	//store all those test variables
-	test_cache.set("str_keyc", static_cast<Cache::val_type>(string_test_ptr), sizeof(string_test));
-	std::cout << "Storing string..." << "\t\t" << test_cache.space_used() << std::endl;
-
-	test_cache.set("int_keya", static_cast<Cache::val_type>(int_test_ptr), sizeof(int_test));
-	std::cout << "Storing int..." << "\t\t\t" << test_cache.space_used() << std::endl;
-
-	test_cache.set("my_keyb", static_cast<Cache::val_type>(char_test), sizeof(char_test));
-	std::cout << "Storing char array..." << "\t\t" << test_cache.space_used() << std::endl;
-
-	/*int intarr_test[10] = {1,2,3,4,5,6,7,8,9,10};
-	test_cache.set("intarr_keyd", static_cast<Cache::val_type>(intarr_test), sizeof(intarr_test));
-	std::cout << "Storing int array..." << "\t\t" << test_cache.space_used() << std::endl;*/
-
-	using namespace std;
-	uint32_t sz; //used to store size for get calls
-
-	//fun with ints! we...
-	//1) get our stored value
-	//2) try to pull out a value that is not stored
-	//3) modify a stored value
-	//4) get our new, modified value out.
-
-	sz = sizeof(int);
-	cout << "Stored 194:\t\t" << intcast(test_cache.get("int_keya", sz)) << "\t\t" << test_cache.space_used() << endl;
-	cout << "Unstored int:\t\t" << intcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
-	test_cache.set("int_keya", static_cast<Cache::val_type>(int_test_ptr2), sizeof(int_test2));
-	cout << "Modified 172:\t\t" << intcast(test_cache.get("int_keya", sz)) << "\t\t" << test_cache.space_used() << endl;
-
-	sz = sizeof(char_test);
-	cout << "Stored abcdefghi:\t" << chararrcast(test_cache.get("my_keyb", sz)) << "\t" << test_cache.space_used() << endl;
-	
-	sz = sizeof(string);
-	cout << "Evicted blorp!!:\t" << strcast(test_cache.get("str_keyc", sz)) << "\t\t" << test_cache.space_used() << endl;
-	
-	test_cache.del("int_keya");
-	test_cache.del("my_keyb");
-	test_cache.del("str_keyc");
-
-	sz = sizeof(int);
-	cout << "Deleted int:\t\t" << intcast(test_cache.get("int_keya", sz)) << "\t\t" << test_cache.space_used() << endl;
-
-	sz = sizeof(char_test);
-	cout << "Deleted chararr:\t" << chararrcast(test_cache.get("my_keyb", sz)) << "\t\t" << test_cache.space_used() << endl;
-	
-	sz = sizeof(string);
-	cout << "Deleted, evicted str:\t" << strcast(test_cache.get("str_keyc", sz)) << "\t\t" << test_cache.space_used() << endl;
-	test_cache.set("str_keyc", static_cast<Cache::val_type>(string_test_ptr), sizeof(string_test));
-	cout << "Stored blorp!!:\t\t" << strcast(test_cache.get("str_keyc", sz)) << "\t\t" << test_cache.space_used() << endl;
-
-	cout << "There's still a string stored in the map, but I bet you there's no memory leaks!" << endl;
-}
-
-void cache_test_cacheflush()
+//Cache size, a ptr, bptr, flusher, a size, b size, flusher size
+uint32_t cache_test_cacheflush(int casz, Cache::val_type aptr, Cache::val_type bptr, Cache::val_type fptr, int asz, int bsz, int fsz)
 {
     using namespace std;
-    Cache test_cache(41, [](){return 0;}, my_hash_func); //create a cache
-    bool a = false;
-    bool* aptr = &a;
-    test_cache.set("bool_key", static_cast<Cache::val_type>(aptr),sizeof(a));
-    cout << "Storing boolean..." << "\t\t" << test_cache.space_used() <<endl;
+    cout << "\nStoring two pointers that fit, one that's bigger than the cache\nThen, verifying that we don't evict the first two..." << endl;
+    Cache test_cache(casz, [](){return 0;}, my_hash_func); //create a cache
+    test_cache.set("a_key", aptr, asz);
+    cout << "Storing first pointer..." << "\t" << "it's size is\t" << asz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
 
-    double b = 5287.47463;
-    double* bptr = &b;
-    test_cache.set("double_key", static_cast<Cache::val_type>(bptr),sizeof(b));
-    cout << "Storing double..." << "\t\t" << test_cache.space_used() <<endl;
+    test_cache.set("b_key", bptr, bsz);
+    cout << "Storing second pointer..." << "\t" << "it's size is\t" << bsz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
 
-    int intarr_test[10] = {1,2,3,4,5,6,7,8,9,10};
-    test_cache.set("intarr_keyd", static_cast<Cache::val_type>(intarr_test), sizeof(intarr_test));
-    cout << "Storing int array..." << "\t\t" << test_cache.space_used() <<endl;
-
-
+    test_cache.set("f_key", fptr, fsz);
+    cout << "Storing flush pointer..." << "\t" << "it's size is\t" << fsz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
+    return test_cache.space_used();
 }
 
-void cache_test_samekey()
+//Cache size, a ptr, bptr, cptr, flusher, a size, b size, c size
+uint32_t cache_test_samekey(int casz, Cache::val_type aptr, Cache::val_type bptr, Cache::val_type cptr, int asz, int bsz, int csz)
 {
     uint32_t sz;
+    uint32_t size_sum = 0;
     using namespace std;
-    Cache test_cache(82, [](){return 0;}, my_hash_func); //create a cache
-    int a = 12;
-    int* aptr = &a;
-    test_cache.set("int_key", static_cast<Cache::val_type>(aptr),sizeof(a));
-    cout << "Storing int..." << "\t\t" << test_cache.space_used() <<endl;
+    cout << "\nStoring three pointers at the same key\nThen, verifying that each of them affects memused_ correctly..." << endl;
+    Cache test_cache(casz, [](){return 0;}, my_hash_func); //create a cache
 
-    sz = sizeof(a);
-    cout << "Stored a!!:\t\t" << intcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
+    test_cache.set("rep_key", aptr, asz);
+    cout << "Storing first pointer..." << "\t" << "it's size is\t" << asz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
+    size_sum += test_cache.space_used();
 
-    string b = "apple";
-    string* bptr = &b;
+    test_cache.set("rep_key", bptr, bsz);
+    cout << "Storing second pointer..." << "\t" << "it's size is\t" << bsz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
+    size_sum += test_cache.space_used();
 
-    cout<< "this is size of b:\t\t"<< sizeof(b)<<endl;
+    test_cache.set("rep_key", cptr, csz);
 
-    test_cache.set("int_key", static_cast<Cache::val_type>(bptr),sizeof(b));
-    cout << "Storing string..." << "\t\t" << test_cache.space_used() <<endl;
-
-    sz = sizeof(b);
-    cout << "Stored b!!:\t\t" << strcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
-    //successfully replaces int with a string if same key is used
-
-    int c = 13;
-    int* cptr = &c;
-    test_cache.set("int_key", static_cast<Cache::val_type>(cptr),sizeof(c));
-    cout << "Storing int..." << "\t\t" << test_cache.space_used() <<endl;
-
-    sz = sizeof(c);
-    cout << "Stored c!!:\t\t" << intcast(test_cache.get("int_key", sz)) << "\t\t" << test_cache.space_used() << endl;
+    cout << "Storing third pointer..." << "\t" << "it's size is\t" << csz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
+    size_sum += test_cache.space_used();
+    return size_sum;
 }
 
+TEST_CASE( "Factorials are computed" ) {
 
-int main()
-{
-	std::cout << "Test flushing the cache" << std::endl;
-	cache_test_cacheflush();
-	std::cout << "\n\nTest assigning different datatypes to the same key" << std::endl;
-	cache_test_samekey();
-	std::cout << "\n\nComprehensive test of all kinds of things" << std::endl;
-	cache_test();
+	int a = 12;
+	std::string b = "hello";
+	int f[10] = {1,2,3,4,5,6,7,8,9,10};
+	Cache::val_type ap = &a;
+	Cache::val_type bp = &b;
+	Cache::val_type fp = &f;
+	int as = sizeof(a); int bs = sizeof(b); int fs = sizeof(f);
+    REQUIRE(cache_test_cacheflush((as+bs+1), ap, bp, fp, as, bs, fs) == as+bs);
+    REQUIRE(cache_test_samekey((as+bs+fs), ap, bp, fp, as, bs, fs) == as+bs+fs);
 }
-//boop
