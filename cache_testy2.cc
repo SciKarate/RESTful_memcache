@@ -1,3 +1,5 @@
+#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
+#include <catch.hpp>
 #include <cache.hh>
 #include <iostream>
 #include <functional>
@@ -227,27 +229,38 @@ void cache_test_evictedquery()
 
 
 }
-
-
-int main()
+//sample
+uint32_t basic_delete(Cache::val_type ptr, uint32_t sz)
 {
-	/*std::cout << "Test flushing the cache" << std::endl;
-	cache_test_cacheflush();
-	std::cout << "\n\nTest assigning different datatypes to the same key" << std::endl;
-	cache_test_samekey();
-	std::cout << "\n\nComprehensive test of all kinds of things" << std::endl;
-	cache_test();
-	
-	std::cout << "Testing querying empty cache" << std::endl;
-	cache_test_emptyquery();
-	std::cout << "Testing invalid query in nonempty cache" << std::endl;
-	cache_test_wrongquery();
-	
-	std::cout << "Testing quering deleted item" << std::endl;
-	cache_test_delquery();
+    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    test_cache.set("key", ptr, sz);
+    test_cache.del("key");
+    uint32_t outint = intcast(test_cache.get("key",sz));
+    std::cout << "Stored:\t" << "Pointer to delete" << "\tRetrieved:\t" << outint << std::endl;
+    return outint;
+}
+
+//deletes key from brand new cache
+std::string new_cache_delete()
+{
+	Cache test_cache(4, [](){return 0;}, my_hash_func); //create a cache
+	test_cache.del("key");
+	std::string yay = "cache is not broken!";
+	return yay;
+}
+
+
+TEST_CASE()
+{
+	/*int a = 12;
+	std::string b = "hello";
+	int f[10] = {1,2,3,4,5,6,7,8,9,10};
+	Cache::val_type ap = &a;
+	Cache::val_type bp = &b;
+	Cache::val_type fp = &f;
+	int as = sizeof(a); int bs = sizeof(b); int fs = sizeof(f);
 	*/
-	std::cout << "Testing quering evicted item" << std::endl;
-	cache_test_evictedquery();
+	REQUIRE(new_cache_delete() =="cache is not broken!");
 
 }
 //boop
