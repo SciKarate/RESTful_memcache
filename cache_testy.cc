@@ -40,7 +40,7 @@ Cache::index_type my_hash_func(Cache::key_type key)
 uint32_t cache_test_cacheflush(int casz, Cache::val_type aptr, Cache::val_type bptr, Cache::val_type fptr, int asz, int bsz, int fsz)
 {
     using namespace std;
-    cout << "\nStoring two pointers that fit, one that's bigger than the cache\nThen, verifying that we don't evict the first two..." << endl;
+    cout << "Storing two pointers that fit, one that's bigger than the cache\nThen, verifying that we don't evict the first two..." << endl;
     Cache test_cache(casz, [](){return 0;}, my_hash_func); //create a cache
     test_cache.set("a_key", aptr, asz);
     cout << "Storing first pointer..." << "\t" << "it's size is\t" << asz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
@@ -59,7 +59,7 @@ uint32_t cache_test_samekey(int casz, Cache::val_type aptr, Cache::val_type bptr
     uint32_t sz;
     uint32_t size_sum = 0;
     using namespace std;
-    cout << "\nStoring three pointers at the same key\nThen, verifying that each of them affects memused_ correctly..." << endl;
+    cout << "Storing three pointers at the same key\nThen, verifying that each of them affects memused_ correctly..." << endl;
     Cache test_cache(casz, [](){return 0;}, my_hash_func); //create a cache
 
     test_cache.set("rep_key", aptr, asz);
@@ -83,7 +83,7 @@ uint32_t basic_int_set_get(Cache::val_type ptr, uint32_t sz)
 	Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
 	test_cache.set("key", ptr, sz);
 	uint32_t outint = intcast(test_cache.get("key",sz));
-    std::cout << "\nStored:\t" << intcast(ptr) << "\tRetrieved:\t" << outint << std::endl;
+    std::cout << "Stored:\t" << intcast(ptr) << "\tRetrieved:\t" << outint << std::endl;
     return outint;
 }
 
@@ -102,7 +102,7 @@ uint32_t basic_evict(Cache::val_type ptr, uint32_t sz)
 {
     Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
     test_cache.set("key", ptr, sz);
-    uint32_t v2 = 10;
+    uint32_t v2 = 2;
     Cache::val_type ptr2 = &v2;
     test_cache.set("key2", ptr2, sizeof(v2));
     uint32_t outint = intcast(test_cache.get("key",sz));
@@ -121,18 +121,72 @@ uint32_t basic_delete(Cache::val_type ptr, uint32_t sz)
     return outint;
 }
 
-TEST_CASE( "Factorials are computed" ) {
+uint32_t store_evict_store(Cache::val_type ptr, uint32_t sz)
+{
+    uint32_t outt = 0;
+    uint32_t v2 = 10;
+    Cache::val_type ptr2 = &v2;
+    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    test_cache.set("key", ptr, sz);
+    outt += test_cache.space_used();
+    test_cache.set("key2", ptr2, sizeof(sz-1));
+    test_cache.set("key", ptr, sz);
+    outt += test_cache.space_used();
+    std::cout << "Storing pointer, evicting it, then storing it...\n";
+    return outt;
+}
 
-	int a = 12;
-	std::string b = "hello";
-	int f[10] = {1,2,3,4,5,6,7,8,9,10};
-	Cache::val_type ap = &a;
-	Cache::val_type bp = &b;
-	Cache::val_type fp = &f;
-	int as = sizeof(a); int bs = sizeof(b); int fs = sizeof(f);
+uint32_t store_evict_delete(Cache::val_type ptr, uint32_t sz)
+{
+    uint32_t outt = 0;
+    uint32_t v2 = 10;
+    Cache::val_type ptr2 = &v2;
+    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    test_cache.set("key", ptr, sz);
+    outt += test_cache.space_used();
+    test_cache.set("key2", ptr2, sizeof(sz-1));
+    outt += test_cache.space_used();
+    test_cache.del("key");
+    outt += test_cache.space_used();
+    std::cout << "Storing pointer, evicting it, then deleting it...\n";
+    return outt;
+}
+
+TEST_CASE( "Check int/str get functionality" )
+{
+    int a = 12;
+    std::string b = "hello";
+    int f[10] = {1,2,3,4,5,6,7,8,9,10};
+    Cache::val_type ap = &a;
+    Cache::val_type bp = &b;
+    Cache::val_type fp = &f;
+    int as = sizeof(a); int bs = sizeof(b); int fs = sizeof(f);
+    
+    std::cout << "SET/GET TEST CASES" << std::endl;
     REQUIRE(basic_int_set_get(ap,as) == a);
     REQUIRE(basic_str_set_get(bp,bs) == b);
     std::cout << "\n";
+}
+
+std::string new_cache_delete()
+{
+    Cache test_cache(4, [](){return 0;}, my_hash_func); //create a cache
+    test_cache.del("key");
+    std::string yay = "cache is not broken!";
+    return yay;
+}
+
+TEST_CASE( "Check eviction and deletion functionality")
+{
+    int a = 12;
+    std::string b = "hello";
+    int f[10] = {1,2,3,4,5,6,7,8,9,10};
+    Cache::val_type ap = &a;
+    Cache::val_type bp = &b;
+    Cache::val_type fp = &f;
+    int as = sizeof(a); int bs = sizeof(b); int fs = sizeof(f);
+
+    std::cout << "DELETION/EVICTION TEST CASES" << std::endl;
     REQUIRE(basic_evict(ap,as) == (0));
     REQUIRE(basic_evict(bp,bs) == (0));
     REQUIRE(basic_evict(fp,fs) == (0));
@@ -140,9 +194,32 @@ TEST_CASE( "Factorials are computed" ) {
     REQUIRE(basic_delete(ap,as) == (0));
     REQUIRE(basic_delete(bp,bs) == (0));
     REQUIRE(basic_delete(fp,fs) == (0));
-    REQUIRE(cache_test_cacheflush((as+bs+1), ap, bp, fp, as, bs, fs) == as+bs);
-    REQUIRE(cache_test_samekey((as+bs+fs), ap, bp, fp, as, bs, fs) == as+bs+fs);
+    std::cout << "\n";
+    REQUIRE(store_evict_store(ap,as) == (as * 2));
+    REQUIRE(store_evict_store(bp,bs) == (bs * 2));
+    REQUIRE(store_evict_store(fp,fs) == (fs * 2));
+    std::cout << "\n";
+    REQUIRE(store_evict_delete(ap,as) == (as + (sizeof(int) * 2)));
+    REQUIRE(store_evict_delete(bp,bs) == (bs + (sizeof(int) * 2)));
+    REQUIRE(store_evict_delete(fp,fs) == (fs + (sizeof(int) * 2)));
+    REQUIRE(new_cache_delete() =="cache is not broken!");
+    std::cout << "\n";
+
 }
-//delete key from brand new cache
-//store, evict, then try and delete
-//store keya, overwrite with keyb (evicted), overwrite keyb with keya, get keya
+
+TEST_CASE( "Checks niche functionality" )
+{
+	int a = 12;
+	std::string b = "hello";
+	int f[10] = {1,2,3,4,5,6,7,8,9,10};
+	Cache::val_type ap = &a;
+	Cache::val_type bp = &b;
+	Cache::val_type fp = &f;
+	int as = sizeof(a); int bs = sizeof(b); int fs = sizeof(f);
+
+    std::cout << "NICHE TEST CASES" << std::endl;
+    REQUIRE(cache_test_cacheflush((as+bs+1), ap, bp, fp, as, bs, fs) == as+bs);
+    std::cout << "\n";
+    REQUIRE(cache_test_samekey((as+bs+fs), ap, bp, fp, as, bs, fs) == as+bs+fs);
+    std::cout << "\n";
+}
