@@ -129,7 +129,7 @@ uint32_t store_evict_store(Cache::val_type ptr, uint32_t sz)
     Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
     test_cache.set("key", ptr, sz);
     outt += test_cache.space_used();
-    test_cache.set("key2", ptr2, sizeof(sz-1));
+    test_cache.set("key2", ptr2, (sz-1));
     test_cache.set("key", ptr, sz);
     outt += test_cache.space_used();
     std::cout << "Storing pointer, evicting it, then storing it...\n";
@@ -144,12 +144,37 @@ uint32_t store_evict_delete(Cache::val_type ptr, uint32_t sz)
     Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
     test_cache.set("key", ptr, sz);
     outt += test_cache.space_used();
-    test_cache.set("key2", ptr2, sizeof(sz-1));
+    test_cache.set("key2", ptr2, (sz-1));
     outt += test_cache.space_used();
     test_cache.del("key");
     outt += test_cache.space_used();
     std::cout << "Storing pointer, evicting it, then deleting it...\n";
     return outt;
+}
+
+std::string new_cache_delete()
+{
+    Cache test_cache(4, [](){return 0;}, my_hash_func); //create a cache
+    test_cache.del("key");
+    std::string yay = "cache is not broken!";
+    return yay;
+}
+
+std::string new_cache_get()
+{
+    uint32_t sz = 0;
+    Cache test_cache(4, [](){return 0;}, my_hash_func); //create a cache
+    test_cache.get("key",sz);
+    std::string yay = "cache is not broken!";
+    return yay;
+}
+
+uint32_t basic_memused(Cache::val_type ptr, uint32_t sz)
+{
+    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    test_cache.set("key", ptr, sz);
+    std::cout << "Verifying space_used...\n";
+    return test_cache.space_used();
 }
 
 TEST_CASE( "Check int/str get functionality" )
@@ -163,17 +188,18 @@ TEST_CASE( "Check int/str get functionality" )
     int as = sizeof(a); int bs = sizeof(b); int fs = sizeof(f);
     
     std::cout << "SET/GET TEST CASES" << std::endl;
-    REQUIRE(basic_int_set_get(ap,as) == a);
-    REQUIRE(basic_str_set_get(bp,bs) == b);
+    SECTION("the simplest of set/gets")
+    {
+        REQUIRE(basic_int_set_get(ap,as) == a);
+        REQUIRE(basic_str_set_get(bp,bs) == b);
+    }
+    SECTION("check that memused works")
+    {
+        REQUIRE(basic_memused(ap,as) == as);
+        REQUIRE(basic_memused(bp,bs) == bs);
+        REQUIRE(basic_memused(fp,fs) == fs);
+    }
     std::cout << "\n";
-}
-
-std::string new_cache_delete()
-{
-    Cache test_cache(4, [](){return 0;}, my_hash_func); //create a cache
-    test_cache.del("key");
-    std::string yay = "cache is not broken!";
-    return yay;
 }
 
 TEST_CASE( "Check eviction and deletion functionality")
@@ -187,23 +213,40 @@ TEST_CASE( "Check eviction and deletion functionality")
     int as = sizeof(a); int bs = sizeof(b); int fs = sizeof(f);
 
     std::cout << "DELETION/EVICTION TEST CASES" << std::endl;
-    REQUIRE(basic_evict(ap,as) == (0));
-    REQUIRE(basic_evict(bp,bs) == (0));
-    REQUIRE(basic_evict(fp,fs) == (0));
-    std::cout << "\n";
-    REQUIRE(basic_delete(ap,as) == (0));
-    REQUIRE(basic_delete(bp,bs) == (0));
-    REQUIRE(basic_delete(fp,fs) == (0));
-    std::cout << "\n";
-    REQUIRE(store_evict_store(ap,as) == (as * 2));
-    REQUIRE(store_evict_store(bp,bs) == (bs * 2));
-    REQUIRE(store_evict_store(fp,fs) == (fs * 2));
-    std::cout << "\n";
-    REQUIRE(store_evict_delete(ap,as) == (as + (sizeof(int) * 2)));
-    REQUIRE(store_evict_delete(bp,bs) == (bs + (sizeof(int) * 2)));
-    REQUIRE(store_evict_delete(fp,fs) == (fs + (sizeof(int) * 2)));
-    REQUIRE(new_cache_delete() =="cache is not broken!");
-    std::cout << "\n";
+    SECTION( "basic eviction" )
+    {
+        REQUIRE(basic_evict(ap,as) == (0));
+        REQUIRE(basic_evict(bp,bs) == (0));
+        REQUIRE(basic_evict(fp,fs) == (0));
+        std::cout << "\n";
+    }
+    SECTION( "basic deletion" )
+    {
+        REQUIRE(basic_delete(ap,as) == (0));
+        REQUIRE(basic_delete(bp,bs) == (0));
+        REQUIRE(basic_delete(fp,fs) == (0));
+        std::cout << "\n";
+    }
+    SECTION( "store a key, evict it, then store it again")
+    {   //check that mem after firt store + mem after third store = 2size
+        REQUIRE(store_evict_store(ap,as) == (as * 2));
+        REQUIRE(store_evict_store(bp,bs) == (bs * 2));
+        REQUIRE(store_evict_store(fp,fs) == (fs * 2));
+        std::cout << "\n";
+    }
+    SECTION( "store a key, evict it, then delete it" )
+    {   //check mem after first store + mem after second store + mem after delete
+        REQUIRE(store_evict_delete(ap,as) == (as + ((as-1) * 2)));
+        REQUIRE(store_evict_delete(bp,bs) == (bs + ((bs-1) * 2)));
+        REQUIRE(store_evict_delete(fp,fs) == (fs + ((fs-1) * 2)));
+        std::cout << "\n";
+    }
+    SECTION(" operations on an empty cache ")
+    {
+        REQUIRE(new_cache_delete() =="cache is not broken!");
+        REQUIRE(new_cache_get() == "cache is not broken!");
+        std::cout << "Operating on an empty cache...\n" << std::endl;
+    }
 }
 
 TEST_CASE( "Checks niche functionality" )
@@ -217,8 +260,14 @@ TEST_CASE( "Checks niche functionality" )
 	int as = sizeof(a); int bs = sizeof(b); int fs = sizeof(f);
 
     std::cout << "NICHE TEST CASES" << std::endl;
-    REQUIRE(cache_test_cacheflush((as+bs+1), ap, bp, fp, as, bs, fs) == as+bs);
-    std::cout << "\n";
-    REQUIRE(cache_test_samekey((as+bs+fs), ap, bp, fp, as, bs, fs) == as+bs+fs);
-    std::cout << "\n";
+    SECTION( "test what happens when we store a key bigger than cache")
+    {
+        REQUIRE(cache_test_cacheflush((as+bs+1), ap, bp, fp, as, bs, fs) == as+bs);
+        std::cout << "\n";
+    }
+    SECTION( "test various type assignment to same key" )
+    {
+        REQUIRE(cache_test_samekey((as+bs+fs), ap, bp, fp, as, bs, fs) == as+bs+fs);
+        std::cout << "\n";
+    }
 }
