@@ -96,7 +96,7 @@ When using the cache.hh file provided to us (by EF) for HW2, this cache.cpp will
 More specifically, the custom cache.hh and the source cache.cpp omit every occurence of "index_type& val_size".
 We compiled the source cache.cpp file with our tests in two ways:
 	a) We removed references to val_size from get() calls in our test file, then ran these modified tests on the normal cache.cpp
-	b) We added reference to val_size back into cache.cpp, then ran our normal tests on this modified  cache.cpp
+	b) We added reference to val_size back into cache.cpp, then ran our normal tests on this modified cache.cpp
 Both methods of compilation yield the exact same test results.
 2) TEST NAME 					PASS/FAIL
 Integer set/get 				Failed

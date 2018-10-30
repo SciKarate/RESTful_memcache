@@ -142,6 +142,8 @@ public:
 	{
 		if(data_[key] != 0)
 		{
+			evictor_queue.rem(key);
+			evictor_queue.enqueue(key);
 			return data_[key];
 		}//fetch key if exists.
 		else {data_.erase(key); return NULL;} 	//if key is nonexistent, make sure we don't keep it!
