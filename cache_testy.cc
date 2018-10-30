@@ -36,7 +36,7 @@ Cache::index_type my_hash_func(Cache::key_type key)
 	std::hash<std::string> hashy;
 	return hashy(key);
 }
-//Cache size, a ptr, bptr, flusher, a size, b size, flusher size
+//a ptr, bptr, flusher, a size, b size, flusher size
 uint32_t cache_test_flush(Cache::val_type aptr, Cache::val_type bptr, Cache::val_type fptr, int asz, int bsz, int fsz)
 {
     using namespace std;
@@ -54,7 +54,7 @@ uint32_t cache_test_flush(Cache::val_type aptr, Cache::val_type bptr, Cache::val
     return test_cache.space_used();
 }
 
-//Cache size, a ptr, bptr, cptr, flusher, a size, b size, c size
+//a ptr, bptr, cptr, flusher, a size, b size, c size
 uint32_t cache_test_samekey(Cache::val_type aptr, Cache::val_type bptr, Cache::val_type cptr, int asz, int bsz, int csz)
 {
     uint32_t sz;
