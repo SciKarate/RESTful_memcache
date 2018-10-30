@@ -37,28 +37,34 @@ Cache::index_type my_hash_func(Cache::key_type key)
 	return hashy(key);
 }
 //Cache size, a ptr, bptr, flusher, a size, b size, flusher size
-uint32_t cache_test_cacheflush(int casz, Cache::val_type aptr, Cache::val_type bptr, Cache::val_type fptr, int asz, int bsz, int fsz)
+uint32_t cache_test_flush(Cache::val_type aptr, Cache::val_type bptr, Cache::val_type fptr, int asz, int bsz, int fsz)
 {
     using namespace std;
+    uint32_t casz = asz+bsz+1;
     cout << "Storing two pointers that fit, one that's bigger than the cache\nThen, verifying that we don't evict the first two..." << endl;
     Cache test_cache(casz, [](){return 0;}, my_hash_func); //create a cache
     test_cache.set("a_key", aptr, asz);
-    cout << "Storing first pointer..." << "\t" << "it's size is\t" << asz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
+    cout << "Storing first pointer..." << "\t" << "its size is\t" << asz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
 
     test_cache.set("b_key", bptr, bsz);
-    cout << "Storing second pointer..." << "\t" << "it's size is\t" << bsz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
+    cout << "Storing second pointer..." << "\t" << "its size is\t" << bsz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
 
     test_cache.set("f_key", fptr, fsz);
-    cout << "Storing flush pointer..." << "\t" << "it's size is\t" << fsz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
+    cout << "Storing flush pointer..." << "\t" << "its size is\t" << fsz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
     return test_cache.space_used();
 }
 
 //Cache size, a ptr, bptr, cptr, flusher, a size, b size, c size
-uint32_t cache_test_samekey(int casz, Cache::val_type aptr, Cache::val_type bptr, Cache::val_type cptr, int asz, int bsz, int csz)
+uint32_t cache_test_samekey(Cache::val_type aptr, Cache::val_type bptr, Cache::val_type cptr, int asz, int bsz, int csz)
 {
     uint32_t sz;
     uint32_t size_sum = 0;
     using namespace std;
+    uint32_t casz = 0;
+    if (casz < asz) {casz = asz;}
+    if (casz < bsz) {casz = bsz;}
+    if (casz < csz) {casz = csz;}
+    casz += 1;
     cout << "Storing three pointers at the same key\nThen, verifying that each of them affects memused_ correctly..." << endl;
     Cache test_cache(casz, [](){return 0;}, my_hash_func); //create a cache
 
@@ -262,12 +268,12 @@ TEST_CASE( "Checks niche functionality" )
     std::cout << "NICHE TEST CASES" << std::endl;
     SECTION( "test what happens when we store a key bigger than cache")
     {
-        REQUIRE(cache_test_cacheflush((as+bs+1), ap, bp, fp, as, bs, fs) == as+bs);
+        REQUIRE(cache_test_flush(ap, bp, fp, as, bs, fs) == as+bs);
         std::cout << "\n";
     }
     SECTION( "test various type assignment to same key" )
     {
-        REQUIRE(cache_test_samekey((as+bs+fs), ap, bp, fp, as, bs, fs) == as+bs+fs);
+        REQUIRE(cache_test_samekey(ap, bp, fp, as, bs, fs) == as+bs+fs);
         std::cout << "\n";
     }
 }
