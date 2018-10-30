@@ -168,7 +168,6 @@ public:
 		if(data_[key] != 0)
 		{
 			evictor_queue.pushback(key);
-			evictor_queue.display();
 			return data_[key];
 		}//fetch key if exists.
 		else {data_.erase(key); return NULL;} 	//if key is nonexistent, make sure we don't keep it!
