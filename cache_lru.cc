@@ -65,6 +65,30 @@ public:
 		}
 	}
 
+	void pushback(std::string val) //this might work. haven't though about case where head->value == val very much
+	{
+		node *curr;
+		node *prev;
+		curr = head;
+		while((curr->next != NULL) && (*curr->value != val))
+		{
+			prev = curr;
+			curr = curr->next;
+		}
+		if(*curr->value != val) {return;}
+		else if (curr->next == NULL) {return;}
+		else
+		{
+			node *newcurr;
+			newcurr = curr;
+			while((newcurr->next) != NULL) {newcurr = newcurr->next;}
+			prev->next = curr->next;
+			curr->next = NULL;
+			newcurr->next = curr;
+			return;
+		}
+	}
+
 	void dequeue()
 	{
 		node *save;
@@ -136,14 +160,15 @@ public:
 			//std::cout << "evicting key...\t\t" << (header) << std::endl;
 			del(header); //delete the first key in data_
 		}
+		evictor_queue.display();
 	}
 	
 	val_type get(key_type key, index_type& val_size)
 	{
 		if(data_[key] != 0)
 		{
-			evictor_queue.rem(key);
-			evictor_queue.enqueue(key);
+			evictor_queue.pushback(key);
+			evictor_queue.display();
 			return data_[key];
 		}//fetch key if exists.
 		else {data_.erase(key); return NULL;} 	//if key is nonexistent, make sure we don't keep it!
