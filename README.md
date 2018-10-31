@@ -59,6 +59,8 @@ Same Key Storage Behavior	cache_test_samekey	Takes three pointers & sizes. Creat
 Null Hash Behavior			null_hash			Take pointer & size. Creates a cache with a NULL	FAIL
 												hash function, then tries to store the pointer,
 												then tries to get it, then returns memused_.
+												Can cause memory leaks for incorrectly written
+												cache.cc source files.
 
 Deep Copy Check				deepcopy			Take pointer & size. Creates a cache, then store	PASS
 												the pointer. Verify that get returns a different

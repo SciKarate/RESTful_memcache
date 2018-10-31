@@ -188,7 +188,8 @@ uint32_t null_hash(Cache::val_type ptr, uint32_t sz)
     Cache test_cache(sz, NULL, NULL);
     test_cache.set("key", ptr, sz);
     std::cout << "Setting with NULL hash...\n";
-    return test_cache.space_used();
+    int outt = test_cache.space_used();
+    return outt;
 }
 
 uint32_t deepcopy(Cache::val_type ptr, uint32_t sz)
