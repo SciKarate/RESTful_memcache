@@ -110,6 +110,22 @@ Delete from Empty Cache 		Pass
 Get from Empty Cache 			Pass
 Cache Flush Behavior			Pass
 Same Key Storage Behavior		Pass
+
+
+(SI & SA part 2)
+1) Simon and Sam refined their code and asked us to test again. The source code cache.cpp no longer needs a custom cache.hh file and thus compiled without complication. Their code still fails 5 tests but it now passes String set/get and fails Same Key Storage Behavior.
+2) TEST NAME 					PASS/FAIL
+Integer set/get 				Failed
+String set/get 					Pass
+Basic Memused Test 				Failed
+Basic Eviction Test 			Pass
+Basic Deletion Test 			Pass
+Storing Evicted Pointers 		Failed
+Deleting Evicted Pointers 		Failed
+Delete from Empty Cache 		Pass
+Get from Empty Cache 			Pass
+Cache Flush Behavior			Pass
+Same Key Storage Behavior		Fail
 //////////////////////////////////////
 
 
