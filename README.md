@@ -1,3 +1,5 @@
+*********** OPEN IN SUBLIME FOR CORRECT FORMAT ************
+
 //Josh Reiss and Ryan Neumann
 # CS389_HW3
 
@@ -14,11 +16,11 @@ Basic Memused Test 			basic_memused		Takes a pointer and its size, stores it 			
 												in a cache, then returns space_used().
 
 Basic Eviction Test 		basic_evict			Takes a pointer(A) & size, stores it in a 			PASS
-												cache, stores a second pointer(B) to evict
-												(A), then returns get(A).
+												cache, stores a second pointer(B) into full cache
+												to evict (A), then returns get(A).
 
 Basic Deletion Test 		basic_delete		Takes a pointer & size, stores it in a cache,		PASS
-												deletes it, and then returns get(ptr).
+												deletes it, and then returns get(pointer).
 
 Storing Evicted Pointers 	store_evict_store	Takes a pointer(A) & size, stores it in a 			PASS
 												cache, stores a second pointer(B) to evict
@@ -44,8 +46,9 @@ Cache Flush Behavior		cache_test_flush	Takes three pointers & sizes. Creates a c
 												In other words, we put two pointers into a
 												cache, then attempt to store a pointer bigger
 												than the entire cache.
-												A good cache will not change at all when the
-												test attempts to store the third pointer.
+												In our opinion, a good cache should remain unchanged when the 
+												test attempts to store the third oversized pointer rather then
+												futily evicting everything in attempts to store the 3rd pointer.
 
 Same Key Storage Behavior	cache_test_samekey	Takes three pointers & sizes. Creates a cache 		PASS
 												that can fit the largest of the three.
