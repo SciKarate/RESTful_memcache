@@ -183,6 +183,26 @@ uint32_t basic_memused(Cache::val_type ptr, uint32_t sz)
     return test_cache.space_used();
 }
 
+uint32_t null_hash(Cache::val_type ptr, uint32_t sz)
+{
+    Cache test_cache(sz, NULL, NULL);
+    test_cache.set("key", ptr, sz);
+    std::cout << "Setting with NULL hash...\n";
+    return test_cache.space_used();
+}
+
+uint32_t deepcopy(Cache::val_type ptr, uint32_t sz)
+{
+    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    test_cache.set("key", ptr, sz);
+    if(test_cache.get("key",sz) != ptr)
+    {
+        std::cout << "Verifying deep copy...\n";
+        return true;
+    }
+    return false;
+}
+
 TEST_CASE( "Check int/str get functionality" )
 {
     int a = 12;
@@ -274,6 +294,18 @@ TEST_CASE( "Checks niche functionality" )
     SECTION( "test various type assignment to same key" )
     {
         REQUIRE(cache_test_samekey(ap, bp, fp, as, bs, fs) == as+bs+fs);
+        std::cout << "\n";
+    }
+    SECTION("test behavior for null hash")
+    {
+        REQUIRE(null_hash(ap,as) == as);
+        std::cout << "\n";
+    }
+    SECTION("test that we are actually deep copying")
+    {
+        REQUIRE(deepcopy(ap,as) == true);
+        REQUIRE(deepcopy(bp,bs) == true);
+        REQUIRE(deepcopy(fp,fs) == true);
         std::cout << "\n";
     }
 }

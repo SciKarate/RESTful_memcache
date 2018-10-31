@@ -56,6 +56,14 @@ Same Key Storage Behavior	cache_test_samekey	Takes three pointers & sizes. Creat
 												key. Sums memused_ across each step and returns
 												the sum.
 
+Null Hash Behavior			null_hash			Take pointer & size. Creates a cache with a NULL	FAIL
+												hash function, then tries to store the pointer,
+												then tries to get it, then returns memused_.
+
+Deep Copy Check				deepcopy			Take pointer & size. Creates a cache, then store	PASS
+												the pointer. Verify that get returns a different
+												pointer than the one we originally passed.
+
 Part 2: Tested code from...
 (EZ & JO) Ezra Schwartz & Joe Meyer
 (LU & LA) Laura Yoshida & Lucas Yong
@@ -75,6 +83,8 @@ Delete from Empty Cache 		Pass
 Get from Empty Cache 			Pass
 Cache Flush Behavior			Failed
 Same Key Storage Behavior		Pass
+Null Hash Behavior				Failed
+Deep Copy Check					Pass
 //////////////////////////////////////
 
 (LU & LA)
@@ -91,6 +101,8 @@ Delete from Empty Cache 		Pass
 Get from Empty Cache 			Pass
 Cache Flush Behavior			Failed
 Same Key Storage Behavior		Failed
+Null Hash Behavior				Failed
+Deep Copy Check					Failed
 //////////////////////////////////////
 
 (SI & SA)
@@ -113,6 +125,8 @@ Delete from Empty Cache 		Pass
 Get from Empty Cache 			Pass
 Cache Flush Behavior			Pass
 Same Key Storage Behavior		Pass
+Null Hash Behavior				Failed
+Deep Copy Check					Pass
 
 
 (SI & SA part 2)
@@ -129,6 +143,8 @@ Delete from Empty Cache 		Pass
 Get from Empty Cache 			Pass
 Cache Flush Behavior			Pass
 Same Key Storage Behavior		Fail
+Null Hash Behavior				Failed
+Deep Copy Check					Pass
 //////////////////////////////////////
 
 
