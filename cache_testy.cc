@@ -42,7 +42,7 @@ uint32_t cache_test_flush(Cache::val_type aptr, Cache::val_type bptr, Cache::val
     using namespace std;
     uint32_t casz = asz+bsz+1;
     cout << "Storing two pointers that fit, one that's bigger than the cache\nThen, verifying that we don't evict the first two..." << endl;
-    Cache test_cache(casz, [](){return 0;}, my_hash_func); //create a cache
+    Cache test_cache(casz, my_hash_func); //create a cache
     test_cache.set("a_key", aptr, asz);
     cout << "Storing first pointer..." << "\t" << "its size is\t" << asz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
 
@@ -66,7 +66,7 @@ uint32_t cache_test_samekey(Cache::val_type aptr, Cache::val_type bptr, Cache::v
     if (casz < csz) {casz = csz;}
     casz += 1;
     cout << "Storing three pointers at the same key\nThen, verifying that each of them affects memused_ correctly..." << endl;
-    Cache test_cache(casz, [](){return 0;}, my_hash_func); //create a cache
+    Cache test_cache(casz, my_hash_func); //create a cache
 
     test_cache.set("rep_key", aptr, asz);
     cout << "Storing first pointer..." << "\t" << "it's size is\t" << asz << "\t" << "& space_used is\t" << test_cache.space_used() <<endl;
@@ -86,19 +86,21 @@ uint32_t cache_test_samekey(Cache::val_type aptr, Cache::val_type bptr, Cache::v
 //stores int pointer, then querries it
 uint32_t basic_int_set_get(Cache::val_type ptr, uint32_t sz)
 {
-	Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    uint32_t blnk = 0;
+	Cache test_cache(sz, my_hash_func); //create a cache
 	test_cache.set("key", ptr, sz);
-	uint32_t outint = intcast(test_cache.get("key",sz));
+	uint32_t outint = intcast(test_cache.get("key",blnk));
     std::cout << "Stored:\t" << intcast(ptr) << "\tRetrieved:\t" << outint << std::endl;
-    return outint;
+    return outint + blnk;
 }
 
 //stores string pointer, then querries it
 std::string basic_str_set_get(Cache::val_type ptr, uint32_t sz)
 {
-    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    uint32_t blnk = 0;
+    Cache test_cache(sz, my_hash_func); //create a cache
     test_cache.set("key", ptr, sz);
-    std::string outstr = strcast(test_cache.get("key",sz));
+    std::string outstr = strcast(test_cache.get("key",blnk));
     std::cout << "Stored:\t" << strcast(ptr) << "\tRetrieved:\t" << outstr << std::endl;
     return outstr;
 }
@@ -106,12 +108,13 @@ std::string basic_str_set_get(Cache::val_type ptr, uint32_t sz)
 //stores pointer, evicts it, then querries it
 uint32_t basic_evict(Cache::val_type ptr, uint32_t sz)
 {
-    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    uint32_t blnk = 0;
+    Cache test_cache(sz, my_hash_func); //create a cache
     test_cache.set("key", ptr, sz);
     uint32_t v2 = 2;
     Cache::val_type ptr2 = &v2;
     test_cache.set("key2", ptr2, sizeof(v2));
-    uint32_t outint = intcast(test_cache.get("key",sz));
+    uint32_t outint = intcast(test_cache.get("key",blnk));
     std::cout << "Stored:\t" << "Pointer to evict" << "\tRetrieved:\t" << outint << std::endl;
     return outint;
 }
@@ -119,10 +122,11 @@ uint32_t basic_evict(Cache::val_type ptr, uint32_t sz)
 //stores pointer, deletes, then queries it
 uint32_t basic_delete(Cache::val_type ptr, uint32_t sz)
 {
-    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    uint32_t blnk = 0;
+    Cache test_cache(sz, my_hash_func); //create a cache
     test_cache.set("key", ptr, sz);
     test_cache.del("key");
-    uint32_t outint = intcast(test_cache.get("key",sz));
+    uint32_t outint = intcast(test_cache.get("key",blnk));
     std::cout << "Stored:\t" << "Pointer to delete" << "\tRetrieved:\t" << outint << std::endl;
     return outint;
 }
@@ -132,7 +136,7 @@ uint32_t store_evict_store(Cache::val_type ptr, uint32_t sz)
     uint32_t outt = 0;
     uint32_t v2 = 10;
     Cache::val_type ptr2 = &v2;
-    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    Cache test_cache(sz, my_hash_func); //create a cache
     test_cache.set("key", ptr, sz);
     outt += test_cache.space_used();
     test_cache.set("key2", ptr2, (sz-1));
@@ -147,7 +151,7 @@ uint32_t store_evict_delete(Cache::val_type ptr, uint32_t sz)
     uint32_t outt = 0;
     uint32_t v2 = 10;
     Cache::val_type ptr2 = &v2;
-    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    Cache test_cache(sz, my_hash_func); //create a cache
     test_cache.set("key", ptr, sz);
     outt += test_cache.space_used();
     test_cache.set("key2", ptr2, (sz-1));
@@ -160,7 +164,7 @@ uint32_t store_evict_delete(Cache::val_type ptr, uint32_t sz)
 
 std::string new_cache_delete()
 {
-    Cache test_cache(4, [](){return 0;}, my_hash_func); //create a cache
+    Cache test_cache(4, my_hash_func); //create a cache
     test_cache.del("key");
     std::string yay = "cache is not broken!";
     return yay;
@@ -169,7 +173,7 @@ std::string new_cache_delete()
 std::string new_cache_get()
 {
     uint32_t sz = 0;
-    Cache test_cache(4, [](){return 0;}, my_hash_func); //create a cache
+    Cache test_cache(4, my_hash_func); //create a cache
     test_cache.get("key",sz);
     std::string yay = "cache is not broken!";
     return yay;
@@ -177,7 +181,7 @@ std::string new_cache_get()
 
 uint32_t basic_memused(Cache::val_type ptr, uint32_t sz)
 {
-    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    Cache test_cache(sz, my_hash_func); //create a cache
     test_cache.set("key", ptr, sz);
     std::cout << "Verifying space_used...\n";
     return test_cache.space_used();
@@ -185,7 +189,7 @@ uint32_t basic_memused(Cache::val_type ptr, uint32_t sz)
 
 uint32_t null_hash(Cache::val_type ptr, uint32_t sz)
 {
-    Cache test_cache(sz, NULL, NULL);
+    Cache test_cache(sz);
     test_cache.set("key", ptr, sz);
     std::cout << "Setting with NULL hash...\n";
     int outt = test_cache.space_used();
@@ -194,9 +198,10 @@ uint32_t null_hash(Cache::val_type ptr, uint32_t sz)
 
 uint32_t deepcopy(Cache::val_type ptr, uint32_t sz)
 {
-    Cache test_cache(sz, [](){return 0;}, my_hash_func); //create a cache
+    uint32_t blnk = 0;
+    Cache test_cache(sz, my_hash_func); //create a cache
     test_cache.set("key", ptr, sz);
-    if(test_cache.get("key",sz) != ptr)
+    if(test_cache.get("key",blnk) != ptr)
     {
         std::cout << "Verifying deep copy...\n";
         return true;
@@ -217,7 +222,7 @@ TEST_CASE( "Check int/str get functionality" )
     std::cout << "SET/GET TEST CASES" << std::endl;
     SECTION("the simplest of set/gets")
     {
-        REQUIRE(basic_int_set_get(ap,as) == a);
+        REQUIRE(basic_int_set_get(ap,as) == a+as);
         REQUIRE(basic_str_set_get(bp,bs) == b);
     }
     SECTION("check that memused works")

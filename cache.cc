@@ -1,103 +1,20 @@
-#include <cache.hh>
+#include "cache.hh"
+#include "queue.hh"
 #include <unordered_map>
 #include <cstring> //for "std::memcpy" in set
 #include <iostream> //for queue.display
 
-struct node //node for Queue
-{
-	std::string* value;
-	uint32_t size;
-	node *next;
-};
-
-class Queue //Queue for evictor
-{
-public:
-	node *head;
-	Queue()
-		{head = NULL;}
-	
-	void enqueue(std::string* val, uint32_t sz)
-	{
-		node *temp = new node;
-		temp->value = val;
-		temp->size = sz;
-		temp->next = NULL;
-		if(head == NULL)
-			{head = temp;}
-		else
-		{
-			node *traverse;
-			traverse = head;
-			while(traverse->next != NULL)
-				{traverse = traverse->next;}
-			traverse->next = temp;
-		}
-	}
-
-	uint32_t rem(std::string val)
-	{
-		node *curr;
-		node *prev;
-		curr = head;
-		uint32_t out;
-		while((curr->next != NULL) && (*curr->value != val))
-		{
-			prev = curr;
-			curr = curr->next;
-		}
-		if(*curr->value != val) {return 0;}
-		else if (curr == head)
-		{
-			out = curr->size;
-			head = curr->next;
-			delete curr->value;
-			delete curr;
-			return out;
-		}
-		else
-		{
-			out = curr->size;
-			prev->next = curr->next;
-			delete curr->value;
-			delete curr;
-			return out;
-		}
-	}
-
-	void dequeue()
-	{
-		node *save;
-		save = head;
-		head = save->next;
-		delete save;
-	}
-
-	void display()
-	{
-		node *traverse;
-		traverse = head;
-		while(traverse != NULL)
-		{
-			std::cout << traverse->size << "\t" << traverse->value << "\t" << *traverse->value << std::endl;
-			traverse = traverse->next;
-		}
-		std::cout << std::endl;
-	}
-};
-
 struct Cache::Impl {
 private:
 	index_type memused_;
-	evictor_type evictor_;
 	hash_func hasher_;
 	index_type maxmem_;
 	std::unordered_map<std::string, void*, hash_func> data_;
 	Queue evictor_queue;
 	
 public:
-	Impl(index_type maxmem, evictor_type evictor, hash_func hasher)
-	 : maxmem_(maxmem), evictor_(evictor), hasher_(hasher), memused_(0), data_(0, hasher_)
+	Impl(index_type maxmem, hash_func hasher)
+	 : maxmem_(maxmem), hasher_(hasher), memused_(0), data_(0, hasher_)
 	{
 		data_.max_load_factor(0.5);
 	}
@@ -108,13 +25,12 @@ public:
 		{
 			free(data_[kvpair.first]);
 			evictor_queue.rem(kvpair.first);
-			/*del(kvpair.first);*/
 		}
 	}
 
-	void set(key_type key, val_type val, index_type size)
+	int set(key_type key, val_type val, index_type size)
 	{
-		if(size > maxmem_) {return;}
+		if(size > maxmem_) {return 1;}
 		std::string* keyp = new std::string;
 		*keyp = key;
 
@@ -136,28 +52,36 @@ public:
 			//std::cout << "evicting key...\t\t" << (header) << std::endl;
 			del(header); //delete the first key in data_
 		}
+		return 0;
 	}
 	
 	val_type get(key_type key, index_type& val_size)
 	{
 		if(data_[key] != 0)
 		{
+			val_size = evictor_queue.pushback(key);
 			return data_[key];
-		}//fetch key if exists.
+		} //fetch key if exists.
 		else {data_.erase(key); return NULL;} 	//if key is nonexistent, make sure we don't keep it!
 		//takes key and size of retrieved value
 		//return a pointer to key in array
 	}
 
-	void del(key_type key)
+	int del(key_type key)
 	{
 		if(data_[key] != 0)
 		{
-			uint32_t sz = evictor_queue.rem(key);
+			int sz = evictor_queue.rem(key);
 			memused_ -= sz;	//decrement memuse
 			free(data_[key]);				//free pointer to data
 		}
+		else
+		{
+			data_.erase(key);
+			return 1;
+		}
 		data_.erase(key);				//make data_ forget the key.
+		return 0;
 	}
 
 	index_type space_used() const
@@ -167,8 +91,8 @@ public:
 };
 
 // Create a new cache object with a given maximum memory capacity.
-Cache::Cache(index_type maxmem, evictor_type evictor, hash_func hasher)
-: pImpl_(new Impl(maxmem, evictor, hasher))
+Cache::Cache(index_type maxmem, hash_func hasher)
+: pImpl_(new Impl(maxmem, hasher))
 {}
 Cache::~Cache() = default;
 
@@ -177,7 +101,7 @@ Cache::~Cache() = default;
 // Both the key and the value are to be deep-copied (not just pointer copied).
 // If maxmem capacity is exceeded, sufficient values will be removed
 // from the cache to accomodate the new value.
-void Cache::set(key_type key, val_type val, index_type size)
+int Cache::set(key_type key, val_type val, index_type size)
 {
 	pImpl_ ->set(key,val,size);
 }
@@ -191,7 +115,7 @@ Cache::val_type Cache::get(key_type key, index_type& val_size) const
 }
 
 // Delete an object from the cache, if it's still there
-void Cache::del(key_type key)
+int Cache::del(key_type key)
 {
 	pImpl_ ->del(key);
 }
