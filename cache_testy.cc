@@ -57,10 +57,9 @@ uint32_t cache_test_flush(Cache::val_type aptr, Cache::val_type bptr, Cache::val
 //a ptr, bptr, cptr, flusher, a size, b size, c size
 uint32_t cache_test_samekey(Cache::val_type aptr, Cache::val_type bptr, Cache::val_type cptr, int asz, int bsz, int csz)
 {
-    uint32_t sz;
     uint32_t size_sum = 0;
     using namespace std;
-    uint32_t casz = 0;
+    int casz = 0;
     if (casz < asz) {casz = asz;}
     if (casz < bsz) {casz = bsz;}
     if (casz < csz) {casz = csz;}

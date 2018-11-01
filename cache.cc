@@ -6,9 +6,9 @@
 
 struct Cache::Impl {
 private:
-	index_type memused_;
-	hash_func hasher_;
 	index_type maxmem_;
+	hash_func hasher_;
+	index_type memused_;
 	std::unordered_map<std::string, void*, hash_func> data_;
 	Queue evictor_queue;
 	
@@ -103,7 +103,7 @@ Cache::~Cache() = default;
 // from the cache to accomodate the new value.
 int Cache::set(key_type key, val_type val, index_type size)
 {
-	pImpl_ ->set(key,val,size);
+	return pImpl_ ->set(key,val,size);
 }
 
 // Retrieve a pointer to the value associated with key in the cache,
@@ -117,7 +117,7 @@ Cache::val_type Cache::get(key_type key, index_type& val_size) const
 // Delete an object from the cache, if it's still there
 int Cache::del(key_type key)
 {
-	pImpl_ ->del(key);
+	return pImpl_ ->del(key);
 }
 
 // Compute the total amount of memory used up by all cache values (not keys)

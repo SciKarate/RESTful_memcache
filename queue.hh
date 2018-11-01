@@ -89,11 +89,9 @@ public:
   int ret_size(std::string val)
   {
     node *curr;
-    node *prev;
     curr = head;
     while((curr->next != NULL) && (*curr->value != val))
     {
-      prev = curr;
       curr = curr->next;
     }
     if(*curr->value != val) {return 0;}
