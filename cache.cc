@@ -28,6 +28,8 @@ public:
 		}
 	}
 
+	//returns 0: successful set
+	//returns 1: item larger than maxmem
 	int set(key_type key, val_type val, index_type size)
 	{
 		if(size > maxmem_) {return 1;}
@@ -55,6 +57,8 @@ public:
 		return 0;
 	}
 	
+	//returns ptr: successful get
+	//returns NULL: no ptr associated with key
 	val_type get(key_type key, index_type& val_size)
 	{
 		if(data_[key] != 0)
@@ -67,21 +71,23 @@ public:
 		//return a pointer to key in array
 	}
 
+	//returns 0: successful delete
+	//returns 1: no pointer associated with key
 	int del(key_type key)
 	{
 		if(data_[key] != 0)
 		{
 			int sz = evictor_queue.rem(key);
-			memused_ -= sz;	//decrement memuse
-			free(data_[key]);				//free pointer to data
+			memused_ -= sz;		//decrement memuse
+			free(data_[key]);	//free pointer to data
+			data_.erase(key);	//make data_ forget the key.
+			return 0;
 		}
 		else
 		{
 			data_.erase(key);
 			return 1;
 		}
-		data_.erase(key);				//make data_ forget the key.
-		return 0;
 	}
 
 	index_type space_used() const
