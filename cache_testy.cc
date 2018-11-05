@@ -186,6 +186,16 @@ uint32_t basic_memused(Cache::val_type ptr, uint32_t sz)
     return test_cache.space_used();
 }
 
+uint32_t basic_size_get(Cache::val_type ptr, uint32_t sz)
+{
+    uint32_t size_save = 0;
+    Cache test_cache(sz, my_hash_func); //create a cache
+    test_cache.set("key", ptr, sz);
+    test_cache.get("key", size_save);
+    std::cout << "Verifying get returns size...\n";
+    return size_save;
+}
+
 uint32_t null_hash(Cache::val_type ptr, uint32_t sz)
 {
     Cache test_cache(sz);
@@ -229,6 +239,13 @@ TEST_CASE( "Check int/str get functionality" )
         REQUIRE(basic_memused(ap,as) == as);
         REQUIRE(basic_memused(bp,bs) == bs);
         REQUIRE(basic_memused(fp,fs) == fs);
+    }
+    std::cout << "\n";
+    SECTION("check that memused works")
+    {
+        REQUIRE(basic_size_get(ap,as) == as);
+        REQUIRE(basic_size_get(bp,bs) == bs);
+        REQUIRE(basic_size_get(fp,fs) == fs);
     }
     std::cout << "\n";
 }
