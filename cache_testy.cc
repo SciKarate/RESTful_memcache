@@ -314,3 +314,10 @@ TEST_CASE( "Checks niche functionality" )
         std::cout << "\n";
     }
 }
+
+
+
+
+
+
+//Test that may fail: putting in 2 null objects then deleting both
