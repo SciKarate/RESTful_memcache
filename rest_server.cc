@@ -1,4 +1,5 @@
 //g++ server.cc -lcpprest -lboost_system -lcrypto
+//requires boost_system and cpprest
 #include <cpprest/http_client.h>
 #include <cpprest/filestream.h>
 
