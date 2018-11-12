@@ -1,37 +1,30 @@
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
+
+#include <iostream>
+#include <string>
+#include <curl/curl.h>
 
 
-using namespace curlpp::options;
-
-int main(int, char **)
+static size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-	try
-	{
-		// That's all that is needed to do cleanup of used resources (RAII style).
-		curlpp::Cleanup myCleanup;
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
 
-		// Our request to be sent.
-		curlpp::Easy myRequest;
+int main(void)
+{
+  CURL *curl;
+  CURLcode res;
+  std::string readBuffer;
 
-		// Set the URL.
-		myRequest.setOpt<Url>("http://example.com");
+  curl = curl_easy_init();
+  if(curl) {
+    curl_easy_setopt(curl, CURLOPT_URL, "localhost:18085/key/hiya");
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+    res = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
 
-		// Send request and get a result.
-		// By default the result goes to standard output.
-		myRequest.perform();
-	}
-
-	catch(curlpp::RuntimeError & e)
-	{
-		std::cout << e.what() << std::endl;
-	}
-
-	catch(curlpp::LogicError & e)
-	{
-		std::cout << e.what() << std::endl;
-	}
-    
+    std::cout << readBuffer << std::endl;
+  }
   return 0;
 }

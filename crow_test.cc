@@ -3,25 +3,55 @@
 #include "crow.h"
 #include "cache.hh"
 
-int cache_size = 64;
-Cache server_cache(cache_size);
-
 int main()
 {
     crow::SimpleApp app;
+    int cache_size = 64;
+	Cache server_cache(cache_size);
 
-    CROW_ROUTE(app, "/memsize")
-	.methods("GET"_method)
-	([](const crow::request& req){
+    CROW_ROUTE(app, "/memsize").methods("GET"_method)
+	([&server_cache](const crow::request& req)
+	{
 		std::ostringstream os;
+		os << "{ memused: ";
     	os << server_cache.space_used();
+	    os << " }";
 	    os << std::endl;
 		return crow::response{os.str()};
 	});
 
+	CROW_ROUTE(app, "/key/<str>/<str>").methods("PUT"_method)
+	([&server_cache](const crow::request& req, std::string k, std::string v)
+	{
+		if (req.method == "PUT"_method)
+		{
+			uint32_t sz = 2;
+			std::string* vsaver = new std::string(v);
+			Cache::val_type vsto = (vsaver);
+			sz = server_cache.set(k, vsto, sz);
+			delete vsaver;
+			if (sz == 0)
+			{
+				std::ostringstream os;
+				os << "success";
+				os << std::endl;
+				return crow::response{os.str()};
+			}
+			else
+			{
+				return crow::response{"value is larger than maxmem\n"};
+			}
+		}
+		else
+		{
+			return crow::response(404);
+		}
+	});
+
 	CROW_ROUTE(app, "/key/<str>")
 	.methods("HEAD"_method, "GET"_method, "DELETE"_method)
-	([](const crow::request& req, std::string k){
+	([&server_cache](const crow::request& req, std::string k)
+	{
     	if (req.method == "HEAD"_method)
     	{
     		std::ostringstream os;
@@ -31,18 +61,25 @@ int main()
     	}
     	else if (req.method == "GET"_method)
     	{
+    		uint32_t sz = 0;
+    		Cache::val_type v = server_cache.get(k, sz);
     		std::ostringstream os;
+    		os << "{ key: ";
     		os << k;
+    		os << ", value: ";
+    		os << *((std::string*) v);
+    		os << " }";
 	    	os << std::endl;
 			return crow::response{os.str()};
     	}
     	else if (req.method == "DELETE"_method)
     	{
-    		std::ostringstream os;
-    		os << "howdy";
-    		os << k;
-	    	os << std::endl;
-			return crow::response{os.str()};
+    		uint32_t retcode = server_cache.del(k);
+    		if(retcode != 0)
+   			{
+   				return crow::response(404);
+   			}
+			return crow::response{"success"};
     	}
     	else
     	{
@@ -51,16 +88,17 @@ int main()
 	});
 
     CROW_ROUTE(app, "/json")
-	([]{
-    crow::json::wvalue x;
-    x["message"] = "Hello, World!";
-    return x;
+	([]
+	{
+    	crow::json::wvalue x;
+    	x["message"] = "Hello, World!";
+    	return x;
 	});
 
 	//curl -H "Content-Type: application/json" -X POST -d @user.json localhost:18080/add_json
-    CROW_ROUTE(app, "/add_json")
-	.methods("POST"_method)
-	([](const crow::request& req){
+    CROW_ROUTE(app, "/add_json").methods("POST"_method)
+	([](const crow::request& req)
+	{
 		auto x = crow::json::load(req.body);
 	    if (!x)
 	        return crow::response(400);
@@ -73,7 +111,8 @@ int main()
 
 	//curl localhost:18080/hello/30
 	CROW_ROUTE(app,"/hello/<int>")
-	([](int count){
+	([](int count)
+	{
     	if (count > 100)
 	        	return crow::response(400);
     	std::ostringstream os;

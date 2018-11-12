@@ -7,7 +7,7 @@
 
 int intcast(Cache::val_type vptr) //takes void ptr to int, returns int
 {
-	if(vptr != 0)
+	if(vptr != NULL)
 		{return *((int*) vptr);}
 	else
 		{return 0;}
@@ -15,7 +15,7 @@ int intcast(Cache::val_type vptr) //takes void ptr to int, returns int
 
 std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 {
-	if(vptr != 0)
+	if(vptr != NULL)
 		{return *((std::string*) vptr);}
 	else
 		{return "0";}
@@ -23,7 +23,7 @@ std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 
 std::string chararrcast(Cache::val_type vptr) //takes void ptr to char array, returns str
 {
-	if(vptr != 0)
+	if(vptr != NULL)
 	{
 		return (std::string)((char*) vptr);
 	}
