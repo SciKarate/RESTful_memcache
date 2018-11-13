@@ -91,24 +91,13 @@ int main()
     	{
     		uint32_t sz = 0;
     		Cache::val_type v = server_cache.get(k, sz);
-    		
-    		/*std::string reply = "{ key: "
-    		   + k
-    		   + ", value: "
-    		   + std::string()
-    		   + "}";*/
-
-    		
     		std::ostringstream os;
     		os << "{ key: ";
     		os << k;
     		os << ", value: ";
     		if(v != NULL)
     		{
-    			
-    			os << static_cast<const char*>(v) << std::endl;
-    			//os << strcast(v);
-    			//os << intcast(v);
+    			os << static_cast<const char*>(v);
     		}
     		else
     		{
