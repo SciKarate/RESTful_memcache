@@ -8,21 +8,31 @@ using val_t = std::string;
 
 int main(int argc, char *argv[])
 {
-    if(argv[2] == NULL)
+	crow::SimpleApp app;
+	if(argv[2] == NULL)
     {
+    	std::cout << "Usage: server.exe maxmem port" << std::endl;
+    	app.stop();
     	return 0;
     }
-    crow::SimpleApp app;
-    int cache_size = atoi(argv[1]);
     int portsaved = atoi(argv[2]);
+    int cache_size = atoi(argv[1]);
 	Cache server_cache(cache_size);
 
+	/*CROW_ROUTE(app, "/shutdown").methods("POST"_method)
+	([](const crow::request& req)
+	{
+		
+	});*/
+
     CROW_ROUTE(app, "/memsize").methods("GET"_method)
-	([&server_cache](const crow::request& req)
+	([&server_cache, cache_size](const crow::request& req)
 	{
 		std::ostringstream os;
 		os << "{ memused: ";
     	os << server_cache.space_used();
+	    os << ", maxmem: ";
+	    os << cache_size;
 	    os << " }";
 	    os << std::endl;
 		return crow::response{os.str()};
@@ -131,9 +141,9 @@ int main(int argc, char *argv[])
     	if (count > 100)
 	        	return crow::response(400);
     	std::ostringstream os;
-	    os << count << " bottles of beer!";
+	    os << count << " bottles of beer!" << std::endl;
     	return crow::response(os.str());
 	});
 
-    app.port(portsaved).run();
+	app.port(portsaved).run();
 }
