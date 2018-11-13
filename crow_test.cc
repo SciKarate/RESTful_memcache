@@ -2,39 +2,19 @@
 
 #include "crow.h"
 #include "cache.hh"
-
+#include <cstdlib>
+#include <iostream>
 using val_t = std::string;
 
-int intcast(Cache::val_type vptr) //takes void ptr to int, returns int
+int main(int argc, char *argv[])
 {
-	if(vptr != NULL)
-		{return *((int*) vptr);}
-	else
-		{return 0;}
-}
-
-std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
-{
-	if(vptr != NULL)
-		{return *((std::string*) vptr);}
-	else
-		{return "0";}
-}
-
-std::string charcast(Cache::val_type vptr) //takes void ptr to char array, returns str
-{
-	if(vptr != NULL)
-	{
-		return (std::string)((char*) vptr);
-	}
-	else
-		{return "0";}
-}
-
-int main()
-{
+    if(argv[2] == NULL)
+    {
+    	return 0;
+    }
     crow::SimpleApp app;
-    int cache_size = 1028;
+    int cache_size = atoi(argv[1]);
+    int portsaved = atoi(argv[2]);
 	Cache server_cache(cache_size);
 
     CROW_ROUTE(app, "/memsize").methods("GET"_method)
@@ -155,5 +135,5 @@ int main()
     	return crow::response(os.str());
 	});
 
-    app.port(18085).run();
+    app.port(portsaved).run();
 }
