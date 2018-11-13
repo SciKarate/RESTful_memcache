@@ -3,10 +3,38 @@
 #include "crow.h"
 #include "cache.hh"
 
+using val_t = std::string;
+
+int intcast(Cache::val_type vptr) //takes void ptr to int, returns int
+{
+	if(vptr != NULL)
+		{return *((int*) vptr);}
+	else
+		{return 0;}
+}
+
+std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
+{
+	if(vptr != NULL)
+		{return *((std::string*) vptr);}
+	else
+		{return "0";}
+}
+
+std::string charcast(Cache::val_type vptr) //takes void ptr to char array, returns str
+{
+	if(vptr != NULL)
+	{
+		return (std::string)((char*) vptr);
+	}
+	else
+		{return "0";}
+}
+
 int main()
 {
     crow::SimpleApp app;
-    int cache_size = 64;
+    int cache_size = 1028;
 	Cache server_cache(cache_size);
 
     CROW_ROUTE(app, "/memsize").methods("GET"_method)
@@ -20,21 +48,21 @@ int main()
 		return crow::response{os.str()};
 	});
 
-	CROW_ROUTE(app, "/key/<str>/<str>").methods("PUT"_method)
-	([&server_cache](const crow::request& req, std::string k, std::string v)
+	CROW_ROUTE(app, "/key/<string>/<string>").methods("PUT"_method)
+	([&server_cache](const crow::request& req, std::string k, val_t v)
 	{
 		if (req.method == "PUT"_method)
 		{
-			uint32_t sz = 2;
-			std::string* vsaver = new std::string(v);
-			Cache::val_type vsto = (vsaver);
-			sz = server_cache.set(k, vsto, sz);
-			delete vsaver;
+			val_t *vptr = new val_t(v);
+			const auto& str = *static_cast<const val_t*>(vptr);
+			uint32_t sz = server_cache.set(k, str.c_str(), str.size() + 1);
+			delete vptr;
 			if (sz == 0)
 			{
 				std::ostringstream os;
-				os << "success";
-				os << std::endl;
+				os << "success" << std::endl;
+				os << k << std::endl;
+				os << v << std::endl;
 				return crow::response{os.str()};
 			}
 			else
@@ -63,11 +91,29 @@ int main()
     	{
     		uint32_t sz = 0;
     		Cache::val_type v = server_cache.get(k, sz);
+    		
+    		/*std::string reply = "{ key: "
+    		   + k
+    		   + ", value: "
+    		   + std::string()
+    		   + "}";*/
+
+    		
     		std::ostringstream os;
     		os << "{ key: ";
     		os << k;
     		os << ", value: ";
-    		os << *((std::string*) v);
+    		if(v != NULL)
+    		{
+    			
+    			os << static_cast<const char*>(v) << std::endl;
+    			//os << strcast(v);
+    			//os << intcast(v);
+    		}
+    		else
+    		{
+    			os << "NULL";
+    		}
     		os << " }";
 	    	os << std::endl;
 			return crow::response{os.str()};
