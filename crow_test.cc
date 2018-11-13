@@ -9,33 +9,48 @@ using val_t = std::string;
 int main(int argc, char *argv[])
 {
 	crow::SimpleApp app;
-	if(argv[2] == NULL)
+	if(argc < 2)
     {
-    	std::cout << "Usage: server.exe maxmem port" << std::endl;
-    	app.stop();
+    	std::cout << "Need more arguments!" << std::endl;
+    	std::cout << "Usage: \"./server.exe maxmem port\"" << std::endl;
     	return 0;
     }
     int portsaved = atoi(argv[2]);
     int cache_size = atoi(argv[1]);
 	Cache server_cache(cache_size);
 
-	/*CROW_ROUTE(app, "/shutdown").methods("POST"_method)
-	([](const crow::request& req)
+	CROW_ROUTE(app, "/shutdown").methods("POST"_method)
+	([&server_cache](const crow::request& req)
 	{
-		
-	});*/
+		if (req.method == "PUT"_method)
+		{
+			std::exit(0);
+			return crow::response("shutting down...");	
+		}
+		else
+		{
+			return crow::response(404);
+		}
+	});
 
     CROW_ROUTE(app, "/memsize").methods("GET"_method)
 	([&server_cache, cache_size](const crow::request& req)
 	{
-		std::ostringstream os;
-		os << "{ memused: ";
-    	os << server_cache.space_used();
-	    os << ", maxmem: ";
-	    os << cache_size;
-	    os << " }";
-	    os << std::endl;
-		return crow::response{os.str()};
+		if (req.method == "GET"_method)
+		{
+			std::ostringstream os;
+			os << "{ memused: ";
+	    	os << server_cache.space_used();
+		    os << ", maxmem: ";
+		    os << cache_size;
+		    os << " }";
+		    os << std::endl;
+			return crow::response{os.str()};
+		}
+		else
+		{
+			return crow::response(404);
+		}
 	});
 
 	CROW_ROUTE(app, "/key/<string>/<string>").methods("PUT"_method)
@@ -104,45 +119,12 @@ int main(int argc, char *argv[])
    			{
    				return crow::response(404);
    			}
-			return crow::response{"success"};
+			return crow::response{"success\n"};
     	}
     	else
     	{
     		return crow::response(404);
     	}
-	});
-
-    CROW_ROUTE(app, "/json")
-	([]
-	{
-    	crow::json::wvalue x;
-    	x["message"] = "Hello, World!";
-    	return x;
-	});
-
-	//curl -H "Content-Type: application/json" -X POST -d @user.json localhost:18080/add_json
-    CROW_ROUTE(app, "/add_json").methods("POST"_method)
-	([](const crow::request& req)
-	{
-		auto x = crow::json::load(req.body);
-	    if (!x)
-	        return crow::response(400);
-		int sum = x["a"].i()+x["b"].i();
-		std::ostringstream os;
-    	os << sum;
-	    os << std::endl;
-		return crow::response{os.str()};
-	});
-
-	//curl localhost:18080/hello/30
-	CROW_ROUTE(app,"/hello/<int>")
-	([](int count)
-	{
-    	if (count > 100)
-	        	return crow::response(400);
-    	std::ostringstream os;
-	    os << count << " bottles of beer!" << std::endl;
-    	return crow::response(os.str());
 	});
 
 	app.port(portsaved).run();
