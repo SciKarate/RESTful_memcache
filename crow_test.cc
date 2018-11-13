@@ -1,9 +1,11 @@
 //g++ crow_test.cc cache.cc -lboost_system -pthread
-
 #include "crow.h"
 #include "cache.hh"
 #include <cstdlib>
 #include <iostream>
+#include <iomanip>
+#include <time.h>
+#include <stdio.h>
 using val_t = std::string;
 
 int main(int argc, char *argv[])
@@ -13,25 +15,25 @@ int main(int argc, char *argv[])
     {
     	std::cout << "Need more arguments!" << std::endl;
     	std::cout << "Usage: \"./server.exe maxmem port\"" << std::endl;
-    	return 0;
+  		return 0;
     }
     int portsaved = atoi(argv[2]);
     int cache_size = atoi(argv[1]);
 	Cache server_cache(cache_size);
 
+
 	CROW_ROUTE(app, "/shutdown").methods("POST"_method)
-	([&server_cache](const crow::request& req)
+	([&server_cache, &app](const crow::request& req)
 	{
-		if (req.method == "PUT"_method)
+		if (req.method == "POST"_method)
 		{
-			std::exit(0);
+			app.stop();
 			return crow::response("shutting down...");	
 		}
 		else
-		{
-			return crow::response(404);
-		}
+			{return crow::response(404);}
 	});
+
 
     CROW_ROUTE(app, "/memsize").methods("GET"_method)
 	([&server_cache, cache_size](const crow::request& req)
@@ -48,10 +50,9 @@ int main(int argc, char *argv[])
 			return crow::response{os.str()};
 		}
 		else
-		{
-			return crow::response(404);
-		}
+			{return crow::response(404);}
 	});
+
 
 	CROW_ROUTE(app, "/key/<string>/<string>").methods("PUT"_method)
 	([&server_cache](const crow::request& req, std::string k, val_t v)
@@ -62,24 +63,16 @@ int main(int argc, char *argv[])
 			const auto& str = *static_cast<const val_t*>(vptr);
 			uint32_t sz = server_cache.set(k, str.c_str(), str.size() + 1);
 			delete vptr;
+
 			if (sz == 0)
-			{
-				std::ostringstream os;
-				os << "success" << std::endl;
-				os << k << std::endl;
-				os << v << std::endl;
-				return crow::response{os.str()};
-			}
+				{return crow::response(200);}
 			else
-			{
-				return crow::response{"value is larger than maxmem\n"};
-			}
+				{return crow::response(400);}
 		}
 		else
-		{
-			return crow::response(404);
-		}
+			{return crow::response(404);}
 	});
+
 
 	CROW_ROUTE(app, "/key/<str>")
 	.methods("HEAD"_method, "GET"_method, "DELETE"_method)
@@ -87,44 +80,48 @@ int main(int argc, char *argv[])
 	{
     	if (req.method == "HEAD"_method)
     	{
+    		char timestr[50];
+			time_t now = time(0);
+			struct tm tm = *gmtime(&now);
+			strftime(timestr, sizeof(timestr), "%a, %d %b %Y %H:%M:%S %Z", &tm);
+    		
     		std::ostringstream os;
-    		os << "hello!";
+    		os << "{ ";
+    		os << "Accept: text/html, ";
+    		os << "Content-Type: application/x-www-form-urlencoded, ";
+    		os << "Date: ";
+    		os << timestr << ", ";
+    		os << "HTTP version: ";
+    		os << http_parser_version();
+    		os << " }";
 	    	os << std::endl;
 			return crow::response{os.str()};
     	}
+
     	else if (req.method == "GET"_method)
     	{
     		uint32_t sz = 0;
     		Cache::val_type v = server_cache.get(k, sz);
     		std::ostringstream os;
-    		os << "{ key: ";
-    		os << k;
-    		os << ", value: ";
+    		os << "{ key: " << k << ", value: ";
     		if(v != NULL)
-    		{
-    			os << static_cast<const char*>(v);
-    		}
+    			{os << static_cast<const char*>(v);}
     		else
-    		{
-    			os << "NULL";
-    		}
-    		os << " }";
-	    	os << std::endl;
+	    		{os << "NULL";}
+    		os << " }" << std::endl;
 			return crow::response{os.str()};
     	}
+
     	else if (req.method == "DELETE"_method)
     	{
     		uint32_t retcode = server_cache.del(k);
     		if(retcode != 0)
-   			{
-   				return crow::response(404);
-   			}
-			return crow::response{"success\n"};
+   				{return crow::response(404);}
+			return crow::response(200);
     	}
+
     	else
-    	{
-    		return crow::response(404);
-    	}
+    		{return crow::response(404);}
 	});
 
 	app.port(portsaved).run();
