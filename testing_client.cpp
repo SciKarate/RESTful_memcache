@@ -2,7 +2,6 @@
 #include "queue.hh"
 #include <unordered_map>
 #include <cstring> //for "std::memcpy" in set
-#include <iostream> //for queue.display
 
 int portnum = 18085;
 std::string servername = "localhost";
@@ -11,15 +10,14 @@ struct Cache::Impl {
 private:
   index_type maxmem_;
   hash_func hasher_;
-  index_type memused_;
   std::unordered_map<std::string, void*, hash_func> data_;
-  Queue evictor_queue;
   
 public:
-  Impl(index_type maxmem, hash_func hasher)
-   : maxmem_(maxmem), hasher_(hasher), memused_(0), data_(0, hasher_)
+  Impl(index_type maxmem, hash_func hasher) //
+   : maxmem_(maxmem), hasher_(hasher), data_(0, hasher_)
   {
     data_.max_load_factor(0.5);
+    //open socket
   }
 
   ~Impl()
@@ -27,36 +25,19 @@ public:
     for (auto kvpair : data_) //free all ptrs
     {
       free(data_[kvpair.first]);
-      evictor_queue.rem(kvpair.first);
+      //-X DELETE localhost:18085/key
     }
+    //-X POST localhost:18085/shutdown (?)
+    //close the socket
   }
 
   //returns 0: successful set
   //returns 1: item larger than maxmem
   int set(key_type key, val_type val, index_type size)
   {
-    if(size > maxmem_) {return 1;}
-    std::string* keyp = new std::string;
-    *keyp = key;
-
-    if(data_[key] != 0)
-    {
-      free(data_[key]); //free existing ptr if editing
-      uint32_t sz = evictor_queue.rem(key);
-      memused_ -= sz;
-    }
-    void *val_ptr = malloc(size);     //malloc an empty pointer...
-    std::memcpy(val_ptr, val, size);    //and deep-copy to it.
-    data_[key] = val_ptr;         //then store it in data_, and...
-    memused_ += size;             //increase memused_ by its size
-    evictor_queue.enqueue(keyp, size);    //enqueue a pointer to key
-
-    while(memused_ > maxmem_) // if we need to do some eviction...
-    {
-      key_type header = *(evictor_queue.head->value);
-      //std::cout << "evicting key...\t\t" << (header) << std::endl;
-      del(header); //delete the first key in data_
-    }
+    //somehow convert val to a string
+    //-X PUT localhost:18085/key/val
+    //adds the k/v pair to data_
     return 0;
   }
   
@@ -64,38 +45,26 @@ public:
   //returns NULL: no ptr associated with key
   val_type get(key_type key, index_type& val_size)
   {
-    if(data_[key] != 0)
-    {
-      val_size = evictor_queue.pushback(key);
-      return data_[key];
-    } //fetch key if exists.
-    else {data_.erase(key); return NULL;}   //if key is nonexistent, make sure we don't keep it!
-    //takes key and size of retrieved value
-    //return a pointer to key in array
+    //-X GET localhost:18085/key
+    //alloc a pointer to the key and put it in data_
+    //if there's already one there, delete it
+    //return pointer to key
+    //or return NULL
   }
 
   //returns 0: successful delete
   //returns 1: no pointer associated with key
   int del(key_type key)
   {
-    if(data_[key] != 0)
-    {
-      int sz = evictor_queue.rem(key);
-      memused_ -= sz;   //decrement memuse
-      free(data_[key]); //free pointer to data
-      data_.erase(key); //make data_ forget the key.
-      return 0;
-    }
-    else
-    {
-      data_.erase(key);
-      return 1;
-    }
+    //-X DELETE localhost:18085/key
+    //delete it from data_ too
+    //if success return 0
+    //else return 1
   }
 
   index_type space_used() const
   {
-    return memused_;
+    //return -X GET localhost:18085/memsize
   }
 };
 
