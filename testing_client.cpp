@@ -4,6 +4,9 @@
 #include <cstring> //for "std::memcpy" in set
 #include <iostream> //for queue.display
 
+int portnum = 18085;
+std::string servername = "localhost";
+
 struct Cache::Impl {
 private:
   index_type maxmem_;
