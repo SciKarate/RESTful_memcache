@@ -3,18 +3,27 @@
 #include <unordered_map>
 #include <cstring> //for "std::memcpy" in set
 
+#include <iostream>
+#include <stdio.h>
+#include <curl/curl.h> //-lcurl
+#include <fcntl.h>
+#include <sys/stat.h>
+
+
 int portnum = 18085;
-std::string servername = "localhost";
+std::string address = "localhost";
 
 struct Cache::Impl {
 private:
   index_type maxmem_;
   hash_func hasher_;
   std::unordered_map<std::string, void*, hash_func> data_;
-  
+  int PORT;
+
 public:
   Impl(index_type maxmem, hash_func hasher) //
-   : maxmem_(maxmem), hasher_(hasher), data_(0, hasher_)
+   : maxmem_(maxmem), hasher_(hasher), data_(0, hasher_),
+    PORT(portnum) //init sock
   {
     data_.max_load_factor(0.5);
     //open socket
@@ -60,11 +69,13 @@ public:
     //delete it from data_ too
     //if success return 0
     //else return 1
+    return 0;
   }
 
   index_type space_used() const
   {
     //return -X GET localhost:18085/memsize
+    return 5;
   }
 };
 
@@ -102,4 +113,44 @@ int Cache::del(key_type key)
 Cache::index_type Cache::space_used() const
 {
   return pImpl_ ->space_used();
+}
+
+int main()
+{
+  Cache help_me(100, NULL);
+  uint32_t sz = 0;
+  help_me.space_used();
+  CURL *curl;
+  CURLcode res;
+
+  struct stat file_info;
+  char *url;
+  url = "localhost:18085/key/ah/hey";
+
+  curl_global_init(CURL_GLOBAL_ALL);
+  curl = curl_easy_init();
+  /*if(curl)
+  {
+    curl_easy_setopt(curl, CURLOPT_URL, "localhost:18085/shutdown");
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
+    res = curl_easy_perform(curl);
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+    curl_easy_cleanup(curl);
+  }*/
+  if(curl)
+  {
+    curl_easy_setopt(curl, CURLOPT_PUT, 1L);
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+ 
+    /* provide the size of the upload, we specicially typecast the value
+       to curl_off_t since we must be sure to use the correct data size */ 
+    curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
+
+    res = curl_easy_perform(curl);
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res)); 
+    curl_easy_cleanup(curl);
+  }
+  curl_global_cleanup();
 }
