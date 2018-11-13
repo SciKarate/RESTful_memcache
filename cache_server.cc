@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 		if (req.method == "POST"_method)
 		{
 			app.stop();
-			return crow::response("shutting down...");	
+			return crow::response(200);	
 		}
 		else
 			{return crow::response(404);}

@@ -115,6 +115,12 @@ Cache::index_type Cache::space_used() const
   return pImpl_ ->space_used();
 }
 
+static size_t writer(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
+
 int main()
 {
   Cache help_me(100, NULL);
@@ -125,10 +131,11 @@ int main()
 
   struct stat file_info;
   char *url;
-  url = "localhost:18085/key/ah/hey";
+  url = "localhost:18085/key/ah";
 
   curl_global_init(CURL_GLOBAL_ALL);
   curl = curl_easy_init();
+  //below is post code
   /*if(curl)
   {
     curl_easy_setopt(curl, CURLOPT_URL, "localhost:18085/shutdown");
@@ -138,19 +145,53 @@ int main()
       fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
     curl_easy_cleanup(curl);
   }*/
-  if(curl)
+  //below is put code
+  /*if(curl)
   {
     curl_easy_setopt(curl, CURLOPT_PUT, 1L);
     curl_easy_setopt(curl, CURLOPT_URL, url);
  
-    /* provide the size of the upload, we specicially typecast the value
-       to curl_off_t since we must be sure to use the correct data size */ 
+    //provide the size of the upload, we specicially typecast the value
+    //to curl_off_t since we must be sure to use the correct data size
     curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
 
     res = curl_easy_perform(curl);
     if(res != CURLE_OK)
       fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res)); 
     curl_easy_cleanup(curl);
+  }*/
+  //below is get code
+  /*if(curl)
+  {
+    std::string outstring;
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
+    res = curl_easy_perform(curl);
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+      curl_easy_cleanup(curl);
+    std::cout << outstring;
+  }*/
+  //below is header code
+  /*if(curl)
+  {
+    std::string outstring;
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
+    curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+    curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
+    res = curl_easy_perform(curl);
+    if(res != CURLE_OK)
+      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+      curl_easy_cleanup(curl);
+    std::cout << outstring;
+  }*/
+  //below is delete code
+  if(curl)
+  {
+    
   }
   curl_global_cleanup();
 }
