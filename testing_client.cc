@@ -71,7 +71,6 @@ public:
 	//returns 1: item larger than maxmem
 	int set(key_type key, val_type val, index_type size)
 	{
-		struct stat file_info;
 		curl = curl_easy_init();
 		
 		//somehow convert val to a string
@@ -79,6 +78,7 @@ public:
 
 		std::string new_url = surl + "/key/" + key + "/" + valstring;
 		const char* url = new_url.c_str();
+		std::cout << url << std::endl;
 		
 		if(curl) //-X PUT localhost:18085/key/val
 		{
@@ -87,7 +87,6 @@ public:
  
 			//provide the size of the upload, we specicially typecast the value
 			//to curl_off_t since we must be sure to use the correct data size
-			curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
 			res = curl_easy_perform(curl);
 			if(res != CURLE_OK)
 				{

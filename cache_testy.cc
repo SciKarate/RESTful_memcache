@@ -18,7 +18,7 @@ std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 	if(vptr != NULL)
 		{return *((std::string*) vptr);}
 	else
-		{return "0";}
+		{return "";}
 }
 
 std::string chararrcast(Cache::val_type vptr) //takes void ptr to char array, returns str
@@ -28,7 +28,7 @@ std::string chararrcast(Cache::val_type vptr) //takes void ptr to char array, re
 		return (std::string)((char*) vptr);
 	}
 	else
-		{return "0";}
+		{return "";}
 }
 
 Cache::index_type my_hash_func(Cache::key_type key)
