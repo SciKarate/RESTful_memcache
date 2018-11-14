@@ -28,7 +28,7 @@ struct Cache::Impl {
 private:
   index_type maxmem_;
   hash_func hasher_;
-  std::unordered_map<std::string, void*, hash_func> data_;
+  std::unordered_map<std::string, std::string*, hash_func> data_;
   std::string surl;
 
 public:
@@ -43,26 +43,26 @@ public:
 
   ~Impl()
   {
-    CURL *curl;
+    for (auto kvpair : data_) //free all ptrs
+    {
+      del(kvpair.first);
+    }
+    /*CURL *curl;
     CURLcode res;
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     std::string new_url = surl + "/shutdown";
     const char* url = new_url.c_str();
-    for (auto kvpair : data_) //free all ptrs
-    {
-      free(data_[kvpair.first]);
-    }
-    if(curl) //-X POST localhost:18085/shutdown
+    /*if(curl) //-X POST localhost:18085/shutdown
     {
       curl_easy_setopt(curl, CURLOPT_URL, url);
       curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
       res = curl_easy_perform(curl);
       if(res != CURLE_OK)
-        {fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));}
+        {fprintf(stderr, "shutdown failed:\t %s\n", curl_easy_strerror(res));}
       curl_easy_cleanup(curl);
     }
-    curl_global_cleanup();
+    curl_global_cleanup();*/
   }
 
   //returns 0: successful set
@@ -76,7 +76,7 @@ public:
     curl = curl_easy_init();
     
     //somehow convert val to a string
-    std::string valstring = "heya";
+    std::string valstring = *((std::string*) val);;
 
     std::string new_url = surl + "/key/" + key + "/" + valstring;
     const char* url = new_url.c_str();
@@ -92,7 +92,7 @@ public:
 
       res = curl_easy_perform(curl);
       if(res != CURLE_OK)
-        {fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));}
+        {fprintf(stderr, "set(k, v, sz) failed:\t %s\n", curl_easy_strerror(res));}
       curl_easy_cleanup(curl);
     }
     curl_global_cleanup();
@@ -119,9 +119,9 @@ public:
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
       res = curl_easy_perform(curl);
       if(res != CURLE_OK)
-        {fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));}
+        {fprintf(stderr, "get(k, v_s) failed:\t %s\n", curl_easy_strerror(res));}
       curl_easy_cleanup(curl);
-      std::cout << outstring;
+      //std::cout << outstring;
     }
     curl_global_cleanup();
 
@@ -132,14 +132,17 @@ public:
     {
         return NULL;
     }
-    std::string valler = root.get("key", "A Default Value if not exists" ).asString();
-    std::cout << valler << std::endl;
+    std::string valler = root.get("key", "NOT FOUND" ).asString();
 
     //somehow allocate memory for valler and turn it into a void*
+    std::string *vptr = new std::string(valler);
     //set val_size = size of valler
+    const auto& str = *static_cast<const std::string*>(vptr);
+    val_size = str.size() + 1;
 
-    data_[key] = val;
-    return val;
+    //remember the pointer so we can clean up at the end
+    data_[key] = vptr;
+    return (const void*)vptr;
   }
 
   //returns 0: successful delete
@@ -163,11 +166,14 @@ public:
       curl_easy_cleanup(curl); 
     }
     curl_global_cleanup();
+    delete(data_[key]);
+    data_.erase(key);
     return retcode;
   }
 
   index_type space_used() const
   {
+    int retval = 0;
     CURL *curl;
     CURLcode res;
     curl_global_init(CURL_GLOBAL_ALL);
@@ -182,9 +188,9 @@ public:
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
       res = curl_easy_perform(curl);
       if(res != CURLE_OK)
-        {fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));}
+        {fprintf(stderr, "space_used() failed:\t %s\n", curl_easy_strerror(res));}
       curl_easy_cleanup(curl);
-      std::cout << outstring;
+      //std::cout << outstring;
     }
     curl_global_cleanup();
     Json::Value root;   
@@ -194,9 +200,10 @@ public:
     {
         return 0;
     }
-    std::string valler = root.get("memused", "A Default Value if not exists" ).asString();
-    std::cout << valler << std::endl;
-    return 5;
+    std::string valler = root.get("memused", "NOT FOUND" ).asString();
+    //std::cout << valler << std::endl;
+    retval = stoi(valler);
+    return retval;
   }
 };
 
@@ -236,19 +243,11 @@ Cache::index_type Cache::space_used() const
   return pImpl_ ->space_used();
 }
 
-int main()
-{
-  Cache help_me(100);
-  uint32_t sz = 0;
-  Cache::val_type fake;
-  help_me.set("bl", fake, sz);
-  help_me.get("bl", sz);
-  help_me.space_used();
-  help_me.del("bl");
-  help_me.space_used();
 
+/*int main()
+{
   //below is header code
-  /*if(curl)
+  if(curl)
   {
     std::string outstring;
     curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -261,5 +260,5 @@ int main()
       fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
       curl_easy_cleanup(curl);
     std::cout << outstring;
-  }*/
-}
+  }
+}*/

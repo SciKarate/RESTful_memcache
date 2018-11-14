@@ -55,12 +55,12 @@ int main(int argc, char *argv[])
 
 
 	CROW_ROUTE(app, "/key/<string>/<string>").methods("PUT"_method)
-	([&server_cache](const crow::request& req, std::string k, val_t v)
+	([&server_cache](const crow::request& req, std::string k, std::string v)
 	{
 		if (req.method == "PUT"_method)
 		{
-			val_t *vptr = new val_t(v);
-			const auto& str = *static_cast<const val_t*>(vptr);
+			std::string *vptr = new std::string(v);
+			const auto& str = *static_cast<const std::string*>(vptr);
 			uint32_t sz = server_cache.set(k, str.c_str(), str.size() + 1);
 			delete vptr;
 
