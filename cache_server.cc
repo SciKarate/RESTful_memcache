@@ -1,4 +1,5 @@
 //g++ crow_test.cc cache.cc -lboost_system -pthread
+//needs: boost_system
 #include "crow.h"
 #include "cache.hh"
 #include <cstdlib>

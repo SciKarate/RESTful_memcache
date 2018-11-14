@@ -1,4 +1,4 @@
-//g++ testing_client.cc cache_client_test.cc -o cl.out -lboost_system -pthread -lcurl -ljsoncpp
+//g++ testing_client_outside.cc cache_client_test.cc -o cl.out -lboost_system -pthread -lcurl -ljsoncpp
 //needs: boost_system, libcurl, jsoncpp
 #include "cache.hh"
 #include "queue.hh"
@@ -51,8 +51,20 @@ public:
 		for (auto kvpair : data_) //free all ptrs
 		{
 			del(kvpair.first);
-			curl_global_cleanup();
 		}
+		curl = curl_easy_init();
+		std::string new_url = surl + "/shutdown";
+		const char* url = new_url.c_str();
+		if(curl) //-X POST localhost:18085/shutdown
+		{
+			curl_easy_setopt(curl, CURLOPT_URL, url);
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
+			res = curl_easy_perform(curl);
+			if(res != CURLE_OK)
+				{fprintf(stderr, "shutdown failed:\t %s\n", curl_easy_strerror(res));}
+			curl_easy_cleanup(curl);
+		}
+		curl_global_cleanup();
 	}
 
 	//returns 0: successful set
@@ -76,11 +88,12 @@ public:
 			//provide the size of the upload, we specicially typecast the value
 			//to curl_off_t since we must be sure to use the correct data size
 			curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
-			std::cout << "Oh my" << std::endl;
 			res = curl_easy_perform(curl);
-			std::cout << "goodness." << std::endl;
 			if(res != CURLE_OK)
-				{fprintf(stderr, "set(k, v, sz) failed:\t %s\n", curl_easy_strerror(res));}
+				{
+					fprintf(stderr, "set(k, v, sz) failed:\t %s\n", curl_easy_strerror(res));
+					return 1;
+				}
 			curl_easy_cleanup(curl);
 		}
 		return 0;
@@ -90,8 +103,6 @@ public:
 	//returns NULL: no ptr associated with key
 	val_type get(key_type key, index_type& val_size)
 	{
-		void* val = NULL;
-		
 		curl = curl_easy_init();
 		std::string outstring;
 		std::string new_url = surl + "/key/" + key;
@@ -104,13 +115,16 @@ public:
 			curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
 			res = curl_easy_perform(curl);
 			if(res != CURLE_OK)
-				{fprintf(stderr, "get(k, v_s) failed:\t %s\n", curl_easy_strerror(res));}
+				{
+					fprintf(stderr, "get(k, v_s) failed:\t %s\n", curl_easy_strerror(res));
+					return NULL;
+				}
 			curl_easy_cleanup(curl);
 		}
 
-		Json::Value root;	 
+		Json::Value root;	
 		Json::Reader reader;
-		bool parsingSuccessful = reader.parse( outstring.c_str(), root );		 //parse process
+		bool parsingSuccessful = reader.parse( outstring.c_str(), root );	 //parse process
 		if ( !parsingSuccessful )
 			{return NULL;}
 		std::string valler = root.get("key", "NOT FOUND" ).asString();
@@ -165,9 +179,9 @@ public:
 				{fprintf(stderr, "space_used() failed:\t %s\n", curl_easy_strerror(res));}
 			curl_easy_cleanup(curl);
 		}
-		Json::Value root;	 
+		Json::Value root;	
 		Json::Reader reader;
-		bool parsingSuccessful = reader.parse( outstring.c_str(), root );		 //parse process
+		bool parsingSuccessful = reader.parse( outstring.c_str(), root );	 //parse process
 		if ( !parsingSuccessful )
 		{
 				return 0;
@@ -232,14 +246,4 @@ Cache::index_type Cache::space_used() const
 			curl_easy_cleanup(curl);
 		std::cout << outstring;
 	}
-	//below is shutdown code
-		if(curl) //-X POST localhost:18085/shutdown
-		{
-			curl_easy_setopt(curl, CURLOPT_URL, url);
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
-			res = curl_easy_perform(curl);
-			if(res != CURLE_OK)
-				{fprintf(stderr, "shutdown failed:\t %s\n", curl_easy_strerror(res));}
-			curl_easy_cleanup(curl);
-		}
 }*/

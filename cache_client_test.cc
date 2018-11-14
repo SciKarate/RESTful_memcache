@@ -39,24 +39,11 @@ void super_basic_test()
 	cout << endl;
 }
 
-void just_make_it()
-{
-	Cache hello(5);
-	Cache extra(7);
-	std::string real = "howdy";
-	Cache::val_type fake = &real;
-	hello.set("kek", fake, 6);
-	std::cout << "First one!" << std::endl;
-	extra.set("eke", fake, 6);
-	std::cout << "Second one!" << std::endl;
-}
-
 int main()
 {
 	//test code
 	std::string b = "hellothere";
 	Cache::val_type bp = &b;
-	just_make_it();
-	//super_basic_test();
-	//basic_str_set_get(bp, 100);
+	super_basic_test();
+	basic_str_set_get(bp, 100);
 }
