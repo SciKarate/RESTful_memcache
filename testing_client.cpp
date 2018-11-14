@@ -9,14 +9,19 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+#include <jsoncpp/json/json.h>
+#include <jsoncpp/json/reader.h>
+#include <jsoncpp/json/writer.h>
+#include <jsoncpp/json/value.h>
 
 std::string address = "localhost";
 std::string portnum = "18085";
 
+//used for libcurl requests
 static size_t writer(void *contents, size_t size, size_t nmemb, void *userp)
 {
-    ((std::string*)userp)->append((char*)contents, size * nmemb);
-    return size * nmemb;
+  ((std::string*)userp)->append((char*)contents, size * nmemb);
+  return size * nmemb;
 }
 
 struct Cache::Impl {
@@ -47,9 +52,8 @@ public:
     for (auto kvpair : data_) //free all ptrs
     {
       free(data_[kvpair.first]);
-      //-X DELETE localhost:18085/key
     }
-    if(curl)
+    if(curl) //-X POST localhost:18085/shutdown
     {
       curl_easy_setopt(curl, CURLOPT_URL, url);
       curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
@@ -58,8 +62,7 @@ public:
         {fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));}
       curl_easy_cleanup(curl);
     }
-    //-X POST localhost:18085/shutdown (?)
-    //close the socket
+    curl_global_cleanup();
   }
 
   //returns 0: successful set
@@ -74,9 +77,7 @@ public:
     std::string new_url = surl + "/key/" + key + "/hi";
     const char* url = new_url.c_str();
     //somehow convert val to a string
-    //-X PUT localhost:18085/key/val
-    //adds the k/v pair to data_
-    if(curl)
+    if(curl) //-X PUT localhost:18085/key/val
     {
       curl_easy_setopt(curl, CURLOPT_PUT, 1L);
       curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -98,15 +99,16 @@ public:
   //returns NULL: no ptr associated with key
   val_type get(key_type key, index_type& val_size)
   {
+    void* val = NULL;
     CURL *curl;
     CURLcode res;
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
+    std::string outstring;
     std::string new_url = surl + "/key/" + key;
     const char* url = new_url.c_str();
     if(curl)
     {
-      std::string outstring;
       curl_easy_setopt(curl, CURLOPT_URL, url);
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
@@ -117,7 +119,19 @@ public:
       std::cout << outstring;
     }
     curl_global_cleanup();
-    return NULL;
+
+    Json::Value root;   
+    Json::Reader reader;
+    bool parsingSuccessful = reader.parse( outstring.c_str(), root );     //parse process
+    if ( !parsingSuccessful )
+    {
+        return NULL;
+    }
+    std::string valler = root.get("key", "A Default Value if not exists" ).asString();
+    std::cout << valler << std::endl;
+
+    data_[key] = val;
+    return val;
   }
 
   //returns 0: successful delete
@@ -138,7 +152,6 @@ public:
       res = curl_easy_perform(curl);
       if(res != CURLE_OK)
         {retcode = 1;}
-        //fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
       curl_easy_cleanup(curl); 
     }
     curl_global_cleanup();
@@ -151,11 +164,11 @@ public:
     CURLcode res;
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
+    std::string outstring;
     std::string new_url = surl + "/memsize";
     const char* url = new_url.c_str();
     if(curl)
     {
-      std::string outstring;
       curl_easy_setopt(curl, CURLOPT_URL, url);
       curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
       curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
@@ -166,6 +179,15 @@ public:
       std::cout << outstring;
     }
     curl_global_cleanup();
+    Json::Value root;   
+    Json::Reader reader;
+    bool parsingSuccessful = reader.parse( outstring.c_str(), root );     //parse process
+    if ( !parsingSuccessful )
+    {
+        return 0;
+    }
+    std::string valler = root.get("memused", "A Default Value if not exists" ).asString();
+    std::cout << valler << std::endl;
     return 5;
   }
 };
@@ -208,7 +230,7 @@ Cache::index_type Cache::space_used() const
 
 int main()
 {
-  Cache help_me(100, NULL);
+  Cache help_me(100);
   uint32_t sz = 0;
   Cache::val_type fake;
   help_me.set("bl", fake, sz);

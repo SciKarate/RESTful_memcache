@@ -41,11 +41,11 @@ int main(int argc, char *argv[])
 		if (req.method == "GET"_method)
 		{
 			std::ostringstream os;
-			os << "{ memused: ";
+			os << "{ \"memused\": \"";
 	    	os << server_cache.space_used();
-		    os << ", maxmem: ";
+		    os << "\", \"maxmem\": \"";
 		    os << cache_size;
-		    os << " }";
+		    os << "\" }";
 		    os << std::endl;
 			return crow::response{os.str()};
 		}
@@ -87,13 +87,12 @@ int main(int argc, char *argv[])
     		
     		std::ostringstream os;
     		os << "{ ";
-    		os << "Accept: text/html, ";
-    		os << "Content-Type: application/x-www-form-urlencoded, ";
-    		os << "Date: ";
-    		os << timestr << ", ";
-    		os << "HTTP version: ";
+    		os << "\"Accept\": \"text/html\", ";
+    		os << "\"Content-Type\": \"application/x-www-form-urlencoded\", ";
+    		os << "\"Date\": \"" << timestr << "\", ";
+    		os << "\"HTTP version\": \"";
     		os << http_parser_version();
-    		os << " }";
+    		os << "\" }";
 	    	os << std::endl;
 			return crow::response{os.str()};
     	}
@@ -103,12 +102,12 @@ int main(int argc, char *argv[])
     		uint32_t sz = 0;
     		Cache::val_type v = server_cache.get(k, sz);
     		std::ostringstream os;
-    		os << "{ key: " << k << ", value: ";
+    		os << "{ \"key\": \"" << k << "\", \"value\": \"";
     		if(v != NULL)
     			{os << static_cast<const char*>(v);}
     		else
 	    		{os << "NULL";}
-    		os << " }" << std::endl;
+    		os << "\" }" << std::endl;
 			return crow::response{os.str()};
     	}
 
