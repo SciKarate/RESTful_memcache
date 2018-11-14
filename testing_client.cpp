@@ -74,9 +74,13 @@ public:
     CURLcode res;
     curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
-    std::string new_url = surl + "/key/" + key + "/hi";
-    const char* url = new_url.c_str();
+    
     //somehow convert val to a string
+    std::string valstring = "heya";
+
+    std::string new_url = surl + "/key/" + key + "/" + valstring;
+    const char* url = new_url.c_str();
+    
     if(curl) //-X PUT localhost:18085/key/val
     {
       curl_easy_setopt(curl, CURLOPT_PUT, 1L);
@@ -107,6 +111,7 @@ public:
     std::string outstring;
     std::string new_url = surl + "/key/" + key;
     const char* url = new_url.c_str();
+
     if(curl)
     {
       curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -129,6 +134,9 @@ public:
     }
     std::string valler = root.get("key", "A Default Value if not exists" ).asString();
     std::cout << valler << std::endl;
+
+    //somehow allocate memory for valler and turn it into a void*
+    //set val_size = size of valler
 
     data_[key] = val;
     return val;
