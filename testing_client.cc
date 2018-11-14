@@ -1,3 +1,5 @@
+//g++ testing_client.cc cache_client_test.cc -o cl.out -lboost_system -pthread -lcurl -ljsoncpp
+//needs: boost_system, libcurl, jsoncpp
 #include "cache.hh"
 #include "queue.hh"
 #include <unordered_map>
@@ -26,6 +28,8 @@ static size_t writer(void *contents, size_t size, size_t nmemb, void *userp)
 
 struct Cache::Impl {
 private:
+  CURL *curl;
+  CURLcode res;
   index_type maxmem_;
   hash_func hasher_;
   std::unordered_map<std::string, std::string*, hash_func> data_;
@@ -39,6 +43,7 @@ public:
     surl += ":";
     surl += portnum;
     data_.max_load_factor(0.5);
+    curl_global_init(CURL_GLOBAL_ALL);
   }
 
   ~Impl()
@@ -46,23 +51,8 @@ public:
     for (auto kvpair : data_) //free all ptrs
     {
       del(kvpair.first);
+      curl_global_cleanup();
     }
-    /*CURL *curl;
-    CURLcode res;
-    curl_global_init(CURL_GLOBAL_ALL);
-    curl = curl_easy_init();
-    std::string new_url = surl + "/shutdown";
-    const char* url = new_url.c_str();
-    /*if(curl) //-X POST localhost:18085/shutdown
-    {
-      curl_easy_setopt(curl, CURLOPT_URL, url);
-      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
-      res = curl_easy_perform(curl);
-      if(res != CURLE_OK)
-        {fprintf(stderr, "shutdown failed:\t %s\n", curl_easy_strerror(res));}
-      curl_easy_cleanup(curl);
-    }
-    curl_global_cleanup();*/
   }
 
   //returns 0: successful set
@@ -70,13 +60,10 @@ public:
   int set(key_type key, val_type val, index_type size)
   {
     struct stat file_info;
-    CURL *curl;
-    CURLcode res;
-    curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     
     //somehow convert val to a string
-    std::string valstring = *((std::string*) val);;
+    std::string valstring = *((std::string*) val);
 
     std::string new_url = surl + "/key/" + key + "/" + valstring;
     const char* url = new_url.c_str();
@@ -95,7 +82,6 @@ public:
         {fprintf(stderr, "set(k, v, sz) failed:\t %s\n", curl_easy_strerror(res));}
       curl_easy_cleanup(curl);
     }
-    curl_global_cleanup();
     return 0;
   }
   
@@ -104,9 +90,7 @@ public:
   val_type get(key_type key, index_type& val_size)
   {
     void* val = NULL;
-    CURL *curl;
-    CURLcode res;
-    curl_global_init(CURL_GLOBAL_ALL);
+    
     curl = curl_easy_init();
     std::string outstring;
     std::string new_url = surl + "/key/" + key;
@@ -121,17 +105,13 @@ public:
       if(res != CURLE_OK)
         {fprintf(stderr, "get(k, v_s) failed:\t %s\n", curl_easy_strerror(res));}
       curl_easy_cleanup(curl);
-      //std::cout << outstring;
     }
-    curl_global_cleanup();
 
     Json::Value root;   
     Json::Reader reader;
     bool parsingSuccessful = reader.parse( outstring.c_str(), root );     //parse process
     if ( !parsingSuccessful )
-    {
-        return NULL;
-    }
+      {return NULL;}
     std::string valler = root.get("key", "NOT FOUND" ).asString();
 
     //somehow allocate memory for valler and turn it into a void*
@@ -149,9 +129,6 @@ public:
   //returns 1: no pointer associated with key
   int del(key_type key)
   {
-    CURL *curl;
-    CURLcode res;
-    curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     int retcode = 0;
     std::string new_url = surl + "/key/" + key;
@@ -165,18 +142,14 @@ public:
         {retcode = 1;}
       curl_easy_cleanup(curl); 
     }
-    curl_global_cleanup();
     delete(data_[key]);
     data_.erase(key);
     return retcode;
   }
 
-  index_type space_used() const
+  index_type space_used()
   {
     int retval = 0;
-    CURL *curl;
-    CURLcode res;
-    curl_global_init(CURL_GLOBAL_ALL);
     curl = curl_easy_init();
     std::string outstring;
     std::string new_url = surl + "/memsize";
@@ -190,9 +163,7 @@ public:
       if(res != CURLE_OK)
         {fprintf(stderr, "space_used() failed:\t %s\n", curl_easy_strerror(res));}
       curl_easy_cleanup(curl);
-      //std::cout << outstring;
     }
-    curl_global_cleanup();
     Json::Value root;   
     Json::Reader reader;
     bool parsingSuccessful = reader.parse( outstring.c_str(), root );     //parse process
@@ -201,7 +172,6 @@ public:
         return 0;
     }
     std::string valler = root.get("memused", "NOT FOUND" ).asString();
-    //std::cout << valler << std::endl;
     retval = stoi(valler);
     return retval;
   }
@@ -261,4 +231,14 @@ Cache::index_type Cache::space_used() const
       curl_easy_cleanup(curl);
     std::cout << outstring;
   }
+  //below is shutdown code
+    if(curl) //-X POST localhost:18085/shutdown
+    {
+      curl_easy_setopt(curl, CURLOPT_URL, url);
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
+      res = curl_easy_perform(curl);
+      if(res != CURLE_OK)
+        {fprintf(stderr, "shutdown failed:\t %s\n", curl_easy_strerror(res));}
+      curl_easy_cleanup(curl);
+    }
 }*/
