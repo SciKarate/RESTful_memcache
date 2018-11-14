@@ -10,31 +10,53 @@
 #include <sys/stat.h>
 
 
-int portnum = 18085;
 std::string address = "localhost";
+std::string portnum = "18085";
+
+static size_t writer(void *contents, size_t size, size_t nmemb, void *userp)
+{
+    ((std::string*)userp)->append((char*)contents, size * nmemb);
+    return size * nmemb;
+}
 
 struct Cache::Impl {
 private:
   index_type maxmem_;
   hash_func hasher_;
   std::unordered_map<std::string, void*, hash_func> data_;
-  int PORT;
+  std::string surl;
 
 public:
   Impl(index_type maxmem, hash_func hasher) //
-   : maxmem_(maxmem), hasher_(hasher), data_(0, hasher_),
-    PORT(portnum) //init sock
+   : maxmem_(maxmem), hasher_(hasher), data_(0, hasher_)
   {
+    surl += address;
+    surl += ":";
+    surl += portnum;
     data_.max_load_factor(0.5);
-    //open socket
   }
 
   ~Impl()
   {
+    CURL *curl;
+    CURLcode res;
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl = curl_easy_init();
+    std::string new_url = surl + "/shutdown";
+    const char* url = new_url.c_str();
     for (auto kvpair : data_) //free all ptrs
     {
       free(data_[kvpair.first]);
       //-X DELETE localhost:18085/key
+    }
+    if(curl)
+    {
+      curl_easy_setopt(curl, CURLOPT_URL, url);
+      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
+      res = curl_easy_perform(curl);
+      if(res != CURLE_OK)
+        {fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));}
+      curl_easy_cleanup(curl);
     }
     //-X POST localhost:18085/shutdown (?)
     //close the socket
@@ -44,9 +66,31 @@ public:
   //returns 1: item larger than maxmem
   int set(key_type key, val_type val, index_type size)
   {
+    struct stat file_info;
+    CURL *curl;
+    CURLcode res;
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl = curl_easy_init();
+    std::string new_url = surl + "/key/" + key + "/hi";
+    const char* url = new_url.c_str();
     //somehow convert val to a string
     //-X PUT localhost:18085/key/val
     //adds the k/v pair to data_
+    if(curl)
+    {
+      curl_easy_setopt(curl, CURLOPT_PUT, 1L);
+      curl_easy_setopt(curl, CURLOPT_URL, url);
+ 
+      //provide the size of the upload, we specicially typecast the value
+      //to curl_off_t since we must be sure to use the correct data size
+      curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
+
+      res = curl_easy_perform(curl);
+      if(res != CURLE_OK)
+        {fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));}
+      curl_easy_cleanup(curl);
+    }
+    curl_global_cleanup();
     return 0;
   }
   
@@ -54,27 +98,74 @@ public:
   //returns NULL: no ptr associated with key
   val_type get(key_type key, index_type& val_size)
   {
-    //-X GET localhost:18085/key
-    //alloc a pointer to the key and put it in data_
-    //if there's already one there, delete it
-    //return pointer to key
-    //or return NULL
+    CURL *curl;
+    CURLcode res;
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl = curl_easy_init();
+    std::string new_url = surl + "/key/" + key;
+    const char* url = new_url.c_str();
+    if(curl)
+    {
+      std::string outstring;
+      curl_easy_setopt(curl, CURLOPT_URL, url);
+      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
+      curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
+      res = curl_easy_perform(curl);
+      if(res != CURLE_OK)
+        {fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));}
+      curl_easy_cleanup(curl);
+      std::cout << outstring;
+    }
+    curl_global_cleanup();
+    return NULL;
   }
 
   //returns 0: successful delete
   //returns 1: no pointer associated with key
   int del(key_type key)
   {
-    //-X DELETE localhost:18085/key
-    //delete it from data_ too
-    //if success return 0
-    //else return 1
-    return 0;
+    CURL *curl;
+    CURLcode res;
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl = curl_easy_init();
+    int retcode = 0;
+    std::string new_url = surl + "/key/" + key;
+    const char* url = new_url.c_str();
+    if(curl)
+    {
+      curl_easy_setopt(curl, CURLOPT_URL, url);
+      curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
+      res = curl_easy_perform(curl);
+      if(res != CURLE_OK)
+        {retcode = 1;}
+        //fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
+      curl_easy_cleanup(curl); 
+    }
+    curl_global_cleanup();
+    return retcode;
   }
 
   index_type space_used() const
   {
-    //return -X GET localhost:18085/memsize
+    CURL *curl;
+    CURLcode res;
+    curl_global_init(CURL_GLOBAL_ALL);
+    curl = curl_easy_init();
+    std::string new_url = surl + "/memsize";
+    const char* url = new_url.c_str();
+    if(curl)
+    {
+      std::string outstring;
+      curl_easy_setopt(curl, CURLOPT_URL, url);
+      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
+      curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
+      res = curl_easy_perform(curl);
+      if(res != CURLE_OK)
+        {fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));}
+      curl_easy_cleanup(curl);
+      std::cout << outstring;
+    }
+    curl_global_cleanup();
     return 5;
   }
 };
@@ -115,64 +206,17 @@ Cache::index_type Cache::space_used() const
   return pImpl_ ->space_used();
 }
 
-static size_t writer(void *contents, size_t size, size_t nmemb, void *userp)
-{
-    ((std::string*)userp)->append((char*)contents, size * nmemb);
-    return size * nmemb;
-}
-
 int main()
 {
   Cache help_me(100, NULL);
   uint32_t sz = 0;
+  Cache::val_type fake;
+  help_me.set("bl", fake, sz);
+  help_me.get("bl", sz);
   help_me.space_used();
-  CURL *curl;
-  CURLcode res;
+  help_me.del("bl");
+  help_me.space_used();
 
-  struct stat file_info;
-  char *url;
-  url = "localhost:18085/key/ah";
-
-  curl_global_init(CURL_GLOBAL_ALL);
-  curl = curl_easy_init();
-  //below is post code
-  /*if(curl)
-  {
-    curl_easy_setopt(curl, CURLOPT_URL, "localhost:18085/shutdown");
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
-    res = curl_easy_perform(curl);
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    curl_easy_cleanup(curl);
-  }*/
-  //below is put code
-  /*if(curl)
-  {
-    curl_easy_setopt(curl, CURLOPT_PUT, 1L);
-    curl_easy_setopt(curl, CURLOPT_URL, url);
- 
-    //provide the size of the upload, we specicially typecast the value
-    //to curl_off_t since we must be sure to use the correct data size
-    curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
-
-    res = curl_easy_perform(curl);
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res)); 
-    curl_easy_cleanup(curl);
-  }*/
-  //below is get code
-  /*if(curl)
-  {
-    std::string outstring;
-    curl_easy_setopt(curl, CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
-    res = curl_easy_perform(curl);
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-      curl_easy_cleanup(curl);
-    std::cout << outstring;
-  }*/
   //below is header code
   /*if(curl)
   {
@@ -188,15 +232,4 @@ int main()
       curl_easy_cleanup(curl);
     std::cout << outstring;
   }*/
-  //below is delete code
-  if(curl)
-  {
-    curl_easy_setopt(curl, CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "DELETE");
-    res = curl_easy_perform(curl);
-    if(res != CURLE_OK)
-      fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-    curl_easy_cleanup(curl); 
-  }
-  curl_global_cleanup();
 }
