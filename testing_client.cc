@@ -76,8 +76,9 @@ public:
       //provide the size of the upload, we specicially typecast the value
       //to curl_off_t since we must be sure to use the correct data size
       curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
-
+      std::cout << "Oh my" << std::endl;
       res = curl_easy_perform(curl);
+      std::cout << "goodness." << std::endl;
       if(res != CURLE_OK)
         {fprintf(stderr, "set(k, v, sz) failed:\t %s\n", curl_easy_strerror(res));}
       curl_easy_cleanup(curl);
