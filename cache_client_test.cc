@@ -57,6 +57,6 @@ int main()
   std::string b = "hellothere";
   Cache::val_type bp = &b;
   just_make_it();
-  super_basic_test();
-  basic_str_set_get(bp, 100);
+  //super_basic_test();
+  //basic_str_set_get(bp, 100);
 }
