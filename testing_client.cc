@@ -78,15 +78,12 @@ public:
 
 		std::string new_url = surl + "/key/" + key + "/" + valstring;
 		const char* url = new_url.c_str();
-		std::cout << url << std::endl;
-		
+		//std::cout << url << std::endl;
 		if(curl) //-X PUT localhost:18085/key/val
 		{
-			curl_easy_setopt(curl, CURLOPT_PUT, 1L);
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 			curl_easy_setopt(curl, CURLOPT_URL, url);
  
-			//provide the size of the upload, we specicially typecast the value
-			//to curl_off_t since we must be sure to use the correct data size
 			res = curl_easy_perform(curl);
 			if(res != CURLE_OK)
 				{
@@ -120,13 +117,14 @@ public:
 				}
 			curl_easy_cleanup(curl);
 		}
+		//std::cout << outstring << std::endl;
 
 		Json::Value root;	
 		Json::Reader reader;
 		bool parsingSuccessful = reader.parse( outstring.c_str(), root );	 //parse process
 		if ( !parsingSuccessful )
 			{return NULL;}
-		std::string valler = root.get("key", "NOT FOUND" ).asString();
+		std::string valler = root.get("value", "NOT FOUND" ).asString();
 
 		//somehow allocate memory for valler and turn it into a void*
 		std::string *vptr = new std::string(valler);

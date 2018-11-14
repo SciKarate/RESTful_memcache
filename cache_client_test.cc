@@ -18,12 +18,12 @@ int main()
 	uint32_t blnk = 0;
 
 	//new cache_delete
-	//test_cache.del("newk");
-    //std::cout << "cache is not broken!\n";
+	test_cache.del("newk");
+    std::cout << "cache is not broken!\n";
 
     //new cache get
-    //test_cache.get("newk",blnk);
-    //std::cout << "cache is not broken!\n";
+    test_cache.get("newk",blnk);
+    std::cout << "cache is not broken!\n";
 
 	//basic set get
     test_cache.set("newk", ap, as);
