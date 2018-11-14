@@ -128,7 +128,6 @@ public:
 
 		//somehow allocate memory for valler and turn it into a void*
 		std::string *vptr = new std::string(valler);
-		//set val_size = size of valler
 		const auto& str = *static_cast<const std::string*>(vptr);
 		val_size = str.size() + 1;
 

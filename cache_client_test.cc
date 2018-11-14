@@ -9,7 +9,7 @@ std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 		{return "";}
 }
 
-Cache test_cache(1024); //create a cache
+Cache test_cache(100); //create a cache
 
 int main()
 {
