@@ -1,4 +1,4 @@
-//g++ testing_client_shutdown.cc cache_client_test_shutdown.cc -o cl.out -lboost_system -pthread -lcurl -ljsoncpp
+//g++ testing_client_shutdown.cc cache_client_test_shutdown.cc -o cls.out -lboost_system -pthread -lcurl -ljsoncpp
 //needs: boost_system, libcurl, jsoncpp
 #include "cache.hh"
 #include "queue.hh"
