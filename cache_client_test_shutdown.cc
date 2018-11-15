@@ -5,8 +5,6 @@
 #include <iostream>
 #include <functional>
 
-Cache test_cache(100); //create a cache
-
 std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 {
     if(vptr != NULL)
