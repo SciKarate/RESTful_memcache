@@ -7,15 +7,10 @@
 #include <cstring> //for "std::memcpy" in set
 
 #include <iostream>
-//#include <stdio.h>
 #include <curl/curl.h> //-lcurl
-//#include <fcntl.h>
 #include <sys/stat.h>
 
 #include <jsoncpp/json/json.h>
-//#include <jsoncpp/json/reader.h>
-//#include <jsoncpp/json/writer.h>
-//#include <jsoncpp/json/value.h>
 
 std::string address = "localhost";
 std::string portnum = "18085";
