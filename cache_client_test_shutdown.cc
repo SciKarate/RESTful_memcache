@@ -1,4 +1,4 @@
-//g++ testing_client_shutdown.cc cache_client_test_shutdown.cc -o cl.out -lboost_system -pthread -lcurl -ljsoncpp
+//g++ testing_client_shutdown.cc cache_client_test_shutdown.cc -o cls.out -lboost_system -pthread -lcurl -ljsoncpp
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
 #include "cache.hh"
