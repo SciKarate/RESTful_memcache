@@ -4,22 +4,14 @@
 #include "queue.hh"
 #include <unordered_map>
 #include <cstring> //for "std::memcpy" in set
-
 #include <iostream>
-//#include <stdio.h>
 #include <curl/curl.h> //-lcurl
-//#include <fcntl.h>
 #include <sys/stat.h>
-
 #include <jsoncpp/json/json.h>
-//#include <jsoncpp/json/reader.h>
-//#include <jsoncpp/json/writer.h>
-//#include <jsoncpp/json/value.h>
 
 std::string address = "localhost";
 std::string portnum = "18085";
 
-//used for libcurl requests
 static size_t writer(void *contents, size_t size, size_t nmemb, void *userp)
 {
 	((std::string*)userp)->append((char*)contents, size * nmemb);
@@ -53,17 +45,6 @@ public:
 			del(kvpair.first);
 		}
 		curl = curl_easy_init();
-		std::string new_url = surl + "/shutdown";
-		const char* url = new_url.c_str();
-		if(curl) //-X POST localhost:18085/shutdown
-		{
-			curl_easy_setopt(curl, CURLOPT_URL, url);
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
-			res = curl_easy_perform(curl);
-			if(res != CURLE_OK)
-				{fprintf(stderr, "shutdown failed:\t %s\n", curl_easy_strerror(res));}
-			curl_easy_cleanup(curl);
-		}
 		curl_global_cleanup();
 	}
 
@@ -223,23 +204,3 @@ Cache::index_type Cache::space_used() const
 {
 	return pImpl_ ->space_used();
 }
-
-
-/*int main()
-{
-	//below is header code
-	if(curl)
-	{
-		std::string outstring;
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
-		curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
-		curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
-		res = curl_easy_perform(curl);
-		if(res != CURLE_OK)
-			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-			curl_easy_cleanup(curl);
-		std::cout << outstring;
-	}
-}*/

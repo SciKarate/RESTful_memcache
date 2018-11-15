@@ -1,25 +1,25 @@
-//g++ testing_client_outside.cc cache_client_test.cc -o cl.out -lboost_system -pthread -lcurl -ljsoncpp
+//g++ testing_client_shutdown.cc cache_client_test_shutdown.cc -o cl.out -lboost_system -pthread -lcurl -ljsoncpp
 //needs: boost_system, libcurl, jsoncpp
 #include "cache.hh"
 #include "queue.hh"
+#include "shutcall.hh"
 #include <unordered_map>
 #include <cstring> //for "std::memcpy" in set
 
 #include <iostream>
-#include <stdio.h>
+//#include <stdio.h>
 #include <curl/curl.h> //-lcurl
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <sys/stat.h>
 
 #include <jsoncpp/json/json.h>
-#include <jsoncpp/json/reader.h>
-#include <jsoncpp/json/writer.h>
-#include <jsoncpp/json/value.h>
+//#include <jsoncpp/json/reader.h>
+//#include <jsoncpp/json/writer.h>
+//#include <jsoncpp/json/value.h>
 
-std::string address = "134.10.73.153";
+std::string address = "localhost";
 std::string portnum = "18085";
 
-//used for libcurl requests
 static size_t writer(void *contents, size_t size, size_t nmemb, void *userp)
 {
 	((std::string*)userp)->append((char*)contents, size * nmemb);
@@ -53,17 +53,7 @@ public:
 			del(kvpair.first);
 		}
 		curl = curl_easy_init();
-		std::string new_url = surl + "/shutdown";
-		const char* url = new_url.c_str();
-		if(curl) //-X POST localhost:18085/shutdown
-		{
-			curl_easy_setopt(curl, CURLOPT_URL, url);
-			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
-			res = curl_easy_perform(curl);
-			if(res != CURLE_OK)
-				{fprintf(stderr, "shutdown failed:\t %s\n", curl_easy_strerror(res));}
-			curl_easy_cleanup(curl);
-		}
+		shutdown_server(address,portnum);
 		curl_global_cleanup();
 	}
 
@@ -71,7 +61,6 @@ public:
 	//returns 1: item larger than maxmem
 	int set(key_type key, val_type val, index_type size)
 	{
-		struct stat file_info;
 		curl = curl_easy_init();
 		
 		//somehow convert val to a string
@@ -79,15 +68,12 @@ public:
 
 		std::string new_url = surl + "/key/" + key + "/" + valstring;
 		const char* url = new_url.c_str();
-		
+		//std::cout << url << std::endl;
 		if(curl) //-X PUT localhost:18085/key/val
 		{
-			curl_easy_setopt(curl, CURLOPT_PUT, 1L);
+			curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PUT");
 			curl_easy_setopt(curl, CURLOPT_URL, url);
  
-			//provide the size of the upload, we specicially typecast the value
-			//to curl_off_t since we must be sure to use the correct data size
-			curl_easy_setopt(curl, CURLOPT_INFILESIZE_LARGE, (curl_off_t)file_info.st_size);
 			res = curl_easy_perform(curl);
 			if(res != CURLE_OK)
 				{
@@ -121,17 +107,17 @@ public:
 				}
 			curl_easy_cleanup(curl);
 		}
+		//std::cout << outstring << std::endl;
 
 		Json::Value root;	
 		Json::Reader reader;
 		bool parsingSuccessful = reader.parse( outstring.c_str(), root );	 //parse process
 		if ( !parsingSuccessful )
 			{return NULL;}
-		std::string valler = root.get("key", "NOT FOUND" ).asString();
+		std::string valler = root.get("value", "NOT FOUND" ).asString();
 
 		//somehow allocate memory for valler and turn it into a void*
 		std::string *vptr = new std::string(valler);
-		//set val_size = size of valler
 		const auto& str = *static_cast<const std::string*>(vptr);
 		val_size = str.size() + 1;
 
@@ -227,23 +213,3 @@ Cache::index_type Cache::space_used() const
 {
 	return pImpl_ ->space_used();
 }
-
-
-/*int main()
-{
-	//below is header code
-	if(curl)
-	{
-		std::string outstring;
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writer);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outstring);
-		curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
-		curl_easy_setopt(curl, CURLOPT_HEADER, 1L);
-		res = curl_easy_perform(curl);
-		if(res != CURLE_OK)
-			fprintf(stderr, "curl_easy_perform() failed: %s\n", curl_easy_strerror(res));
-			curl_easy_cleanup(curl);
-		std::cout << outstring;
-	}
-}*/
