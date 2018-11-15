@@ -44,7 +44,7 @@ TEST_CASE("test shutdown version functionality")
 
     SECTION("new cache delete")//testing delete in empty cache
     {
-        REQUIRE(test_cache.del("newk") == "NULL");
+        REQUIRE(test_cache.del("newk") == 1);
         std::cout << "\n";
     }
     SECTION("new cache get")//testing get in empty cache
