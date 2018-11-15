@@ -9,99 +9,26 @@ Cache test_cache(100); //create a cache
 
 std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 {
-	if(vptr != NULL)
-		{return *((std::string*) vptr);}
-	else
-		{return "";}
+    if(vptr != NULL)
+        {return *((std::string*) vptr);}
+    else
+        {return "";}
 }
 
-<<<<<<< HEAD
 //all tests must be successive because the deconstructor
 //shuts down the server in this version
 TEST_CASE("test shutdown version functionality")
 {
-    //initialzing objects used in tests
+    //initializing tests
     Cache test_cache(100);
-=======
-/*probably all wrong
-std::string new_cache_delete(std::string newkey)
-{
-    test_cache.del(newkey);
-    return "cache is not broken!\n";
-}
-
-std::string new_cache_get(std::string newkey, uint32_t blnk)
-{
-    test_cache.get(newkey,blnk);
-    return "cache is not broken!\n";
-}
-
-std::string basic_set_get(std::string newkey, Cache::val_type ap, int as)
-{
-    test_cache.set("newk", ap, as);
-}
-*/
-
-std::string basic_str_set_get(Cache::val_type ptr, uint32_t sz)
-{
-    uint32_t blnk = 0;
-    test_cache.set("key", ptr, sz);
-    std::string outstr = strcast(test_cache.get("key",blnk));
-    std::cout << "Stored:\t" << strcast(ptr) << "\tRetrieved:\t" << outstr << std::endl;
-    return outstr;
-}
-
-TEST_CASE("test shutdown version functionality")
-{
->>>>>>> master
     std::string a = "hello";
     Cache::val_type ap = &a;
     int as = sizeof(a);
     uint32_t blnk = 0;
     std::string outstr;
 
-<<<<<<< HEAD
 //new cache delete test
     REQUIRE(test_cache.del("newk") == 0);
-=======
-    SECTION("new cache delete")//testing delete in empty cache
-    {
-        REQUIRE(test_cache.del("unusedkey") == 0);
-        std::cout << "\n";
-    }
-    SECTION("new cache get")//testing get in empty cache
-    {
-        REQUIRE(test_cache.get("unusedkey",blnk) == "NULL");
-        std::cout << "\n";
-    }
-    SECTION("basic set get")//testing setting a k,v pair and retreiving v
-    {
-        REQUIRE(basic_str_set_get(ap,as) == a);
-        std::cout << "\n";
-    }
-    SECTION("basic delete")//testing deleting item from cache
-    {
-        test_cache.del("newk");
-        std::string outstr = strcast(test_cache.get("newk",blnk));
-        REQUIRE(outstr == "NULL");
-        std::cout << "\n";
-    }
-    /*SECTION("basic memused")//testing memused of cache
-    {
-        test_cache.set("newk", ap, as);
-        REQUIRE(test_cache.space_used()==5);
-        std::cout << "\n";
-    }
-    SECTION("basic deep copy")
-    {
-        test_cache.set("newk", ap, as);
-        REQUIRE(test_cache.get("newk",blnk) != ap);
-        std::cout << "\n";
-
-    }*/
-
-
->>>>>>> master
 
 //new cache get test
     outstr = strcast(test_cache.get("newk",blnk)); 
