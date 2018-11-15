@@ -86,7 +86,7 @@ public:
 		std::string outstring;
 		std::string new_url = surl + "/key/" + key;
 		const char* url = new_url.c_str();
-		std::cout << url << std::endl;
+		//std::cout << url << std::endl;
 
 		if(curl)
 		{
