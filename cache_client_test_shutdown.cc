@@ -18,10 +18,16 @@ std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 TEST_CASE("test shutdown version functionality")
 {
     //initializing tests
-    Cache test_cache(100);
+    Cache test_cache(10);
     std::string a = "hello";
     Cache::val_type ap = &a;
     int as = sizeof(a);
+    std::string b = "goodbye";
+    Cache::val_type bp = &b;
+    int bs = sizeof(b);
+    std::string c = "extralongstring";
+    Cache::val_type cp = &c;
+    int cs = sizeof(c);
     uint32_t blnk = 0;
     std::string outstr;
 
@@ -48,6 +54,28 @@ TEST_CASE("test shutdown version functionality")
 
 //basic deep copy test
     REQUIRE(test_cache.get("newk",blnk) != ap);
+
+//basic evict test
+    test_cache.set("newk2",bp,bs);
+    outstr = strcast(test_cache.get("newk",blnk));
+    REQUIRE(outstr =="NULL");
+
+//testing deleteing evicted item
+    REQUIRE(test_cache.del("newk") == 0);
+
+//testing "goodbye" was successfully stored
+    outstr = strcast(test_cache.get("newk2",blnk));
+    REQUIRE(outstr == "goodbye");
+
+//testing storing large item does nothing
+    //FAILS TEST
+    test_cache.set("newk3",cp,cs);
+    outstr = strcast(test_cache.get("newk3",blnk));
+    REQUIRE(outstr == "NULL");
+
+    outstr = strcast(test_cache.get("newk2",blnk));
+    REQUIRE(outstr == "goodbye");
+
 }
 
 
@@ -56,18 +84,7 @@ TEST_CASE("test shutdown version functionality")
 
 /*
 
-//stores pointer, evicts it, then querries it
-std::string basic_evict(Cache::val_type ptr, uint32_t sz)
-{
-    uint32_t blnk = 0;
-    test_cache.set("newk", ptr, sz);
-    uint32_t v2 = 2;
-    Cache::val_type ptr2 = &v2;
-    test_cache.set("key2", ptr2, sizeof(v2));
-    std::string outstr = strcast(test_cache.get("newk",blnk));
-    std::cout << "Stored:\t" << "Pointer to evict" << "\tRetrieved:\t" << outstr << std::endl;
-    return outstr;
-}
+
 
 uint32_t store_evict_store(Cache::val_type ptr, uint32_t sz)
 {
