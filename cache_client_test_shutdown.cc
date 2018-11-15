@@ -50,20 +50,19 @@ TEST_CASE("test shutdown version functionality")
     int as = sizeof(a);
     uint32_t blnk = 0;
 
-
-    SECTION("basic set get")//testing setting a k,v pair and retreiving v
-    {
-        REQUIRE(basic_str_set_get(ap,as) == a);
-        std::cout << "\n";
-    }
     SECTION("new cache delete")//testing delete in empty cache
     {
-        REQUIRE(test_cache.del("newk") == 1);
+        REQUIRE(test_cache.del("unusedkey") == 0);
         std::cout << "\n";
     }
     SECTION("new cache get")//testing get in empty cache
     {
-        REQUIRE(test_cache.get("newk",blnk) == "NULL");
+        REQUIRE(test_cache.get("unusedkey",blnk) == "NULL");
+        std::cout << "\n";
+    }
+    SECTION("basic set get")//testing setting a k,v pair and retreiving v
+    {
+        REQUIRE(basic_str_set_get(ap,as) == a);
         std::cout << "\n";
     }
     SECTION("basic delete")//testing deleting item from cache
@@ -73,7 +72,7 @@ TEST_CASE("test shutdown version functionality")
         REQUIRE(outstr == "NULL");
         std::cout << "\n";
     }
-    SECTION("basic memused")//testing memused of cache
+    /*SECTION("basic memused")//testing memused of cache
     {
         test_cache.set("newk", ap, as);
         REQUIRE(test_cache.space_used()==5);
@@ -85,7 +84,7 @@ TEST_CASE("test shutdown version functionality")
         REQUIRE(test_cache.get("newk",blnk) != ap);
         std::cout << "\n";
 
-    }
+    }*/
 
 
 
