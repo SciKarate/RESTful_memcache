@@ -67,66 +67,17 @@ TEST_CASE("test shutdown version functionality")
 //testing "goodbye" was successfully stored (relies on cache size <=12)
     outstr = strcast(test_cache.get("newk2",blnk));
     REQUIRE(outstr == "goodbye");
-}
+/*
 //testing storing item larger then cache does nothing
-    //SCARY TEST THAT SEGFAULTS AND RUINS PORT, DON'T RUN
-    /*test_cache.set("newk3",cp,cs);
+    //SCARY TEST THAT SEGFAULTS AND RUINS PORT, DO NOT RUN
+    test_cache.set("newk3",cp,cs);
     outstr = strcast(test_cache.get("newk3",blnk));
     REQUIRE(outstr == "NULL");
 
     //testing that the cache decremented space correctly (relies on cache size <=12)
     REQUIRE(test_cache.space_used()==8);
-
-}
-
-
-
-
-
-/*
-
-
-
-uint32_t store_evict_store(Cache::val_type ptr, uint32_t sz)
-{
-    uint32_t outt = 0;
-    uint32_t v2 = 10;
-    Cache::val_type ptr2 = &v2;
-    test_cache.set("newk", ptr, sz);
-    outt += test_cache.space_used();
-    test_cache.set("key2", ptr2, (sz-1));
-    test_cache.set("newk", ptr, sz);
-    outt += test_cache.space_used();
-    std::cout << "Storing pointer, evicting it, then storing it...\n";
-    return outt;
-}
-
-uint32_t store_evict_delete(Cache::val_type ptr, uint32_t sz)
-{
-    uint32_t outt = 0;
-    uint32_t v2 = 10;
-    Cache::val_type ptr2 = &v2;
-    test_cache.set("newk", ptr, sz);
-    outt += test_cache.space_used();
-    test_cache.set("key2", ptr2, (sz-1));
-    outt += test_cache.space_used();
-    test_cache.del("newk");
-    outt += test_cache.space_used();
-    std::cout << "Storing pointer, evicting it, then deleting it...\n";
-    return outt;
-}
-
-uint32_t basic_size_get(Cache::val_type ptr, uint32_t sz)
-{
-    uint32_t size_save = 0;
-    test_cache.set("newk", ptr, sz);
-    test_cache.get("newk", size_save);
-    std::cout << "Verifying get returns size...\n";
-    return size_save;
-}
-
 */
-
+}
 
 
 
