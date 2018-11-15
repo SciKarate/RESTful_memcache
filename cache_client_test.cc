@@ -1,12 +1,10 @@
+//g++ testing_client.cc cache_client_test.cc -o cl.out -lboost_system -pthread -lcurl -ljsoncpp -Wextra -pedantic -Wall
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
 #include "cache.hh"
 #include <iostream>
 #include <functional>
 #include "shutcall.hh"
-//build with "g++ cache.cc cache_tester.cc"
-
-Cache test_cache(1024); //create a cache
 
 std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 {
@@ -19,6 +17,7 @@ std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 //stores string pointer, then querries it
 std::string basic_str_set_get(Cache::val_type ptr, uint32_t sz)
 {
+	Cache test_cache(1024);
     uint32_t blnk = 0;
     test_cache.set("key", ptr, sz);
     std::string outstr = strcast(test_cache.get("key",blnk));
@@ -26,22 +25,10 @@ std::string basic_str_set_get(Cache::val_type ptr, uint32_t sz)
     return outstr;
 }
 
-//stores pointer, evicts it, then querries it
-std::string basic_evict(Cache::val_type ptr, uint32_t sz)
-{
-    uint32_t blnk = 0;
-    test_cache.set("key", ptr, sz);
-    uint32_t v2 = 2;
-    Cache::val_type ptr2 = &v2;
-    test_cache.set("key2", ptr2, sizeof(v2));
-    std::string outstr = strcast(test_cache.get("key",blnk));
-    std::cout << "Stored:\t" << "Pointer to evict" << "\tRetrieved:\t" << outstr << std::endl;
-    return outstr;
-}
-
 //stores pointer, deletes, then queries it
 std::string basic_delete(Cache::val_type ptr, uint32_t sz)
 {
+	Cache test_cache(1024);
     uint32_t blnk = 0;
     test_cache.set("key", ptr, sz);
     test_cache.del("key");
@@ -50,37 +37,9 @@ std::string basic_delete(Cache::val_type ptr, uint32_t sz)
     return outstr;
 }
 
-uint32_t store_evict_store(Cache::val_type ptr, uint32_t sz)
-{
-    uint32_t outt = 0;
-    uint32_t v2 = 10;
-    Cache::val_type ptr2 = &v2;
-    test_cache.set("key", ptr, sz);
-    outt += test_cache.space_used();
-    test_cache.set("key2", ptr2, (sz-1));
-    test_cache.set("key", ptr, sz);
-    outt += test_cache.space_used();
-    std::cout << "Storing pointer, evicting it, then storing it...\n";
-    return outt;
-}
-
-uint32_t store_evict_delete(Cache::val_type ptr, uint32_t sz)
-{
-    uint32_t outt = 0;
-    uint32_t v2 = 10;
-    Cache::val_type ptr2 = &v2;
-    test_cache.set("key", ptr, sz);
-    outt += test_cache.space_used();
-    test_cache.set("key2", ptr2, (sz-1));
-    outt += test_cache.space_used();
-    test_cache.del("key");
-    outt += test_cache.space_used();
-    std::cout << "Storing pointer, evicting it, then deleting it...\n";
-    return outt;
-}
-
 std::string new_cache_delete()
 {
+	Cache test_cache(1024);
     test_cache.del("key");
     std::string yay = "cache is not broken!";
     return yay;
@@ -88,30 +47,45 @@ std::string new_cache_delete()
 
 std::string new_cache_get()
 {
+	Cache test_cache(1024);
     uint32_t sz = 0;
     test_cache.get("key",sz);
     std::string yay = "cache is not broken!";
     return yay;
 }
 
-uint32_t basic_memused(Cache::val_type ptr, uint32_t sz)
+uint32_t basic_memused(Cache::val_type ptr, std::string pk)
 {
+	Cache test_cache(1024);
+	uint32_t sz = 0;
+	std::string *vptr = new std::string(pk);
+	const auto& str = *static_cast<const std::string*>(vptr);
+	int val_size = str.size() + 1;
+	delete(vptr);
+
     test_cache.set("key", ptr, sz);
     std::cout << "Verifying space_used...\n";
-    return test_cache.space_used();
+    return (test_cache.space_used() - val_size);
 }
 
-uint32_t basic_size_get(Cache::val_type ptr, uint32_t sz)
+uint32_t basic_size_get(Cache::val_type ptr, std::string pk)
 {
+	Cache test_cache(1024);
     uint32_t size_save = 0;
-    test_cache.set("key", ptr, sz);
+    std::string *vptr = new std::string(pk);
+	const auto& str = *static_cast<const std::string*>(vptr);
+	int val_size = str.size() + 1;
+	delete(vptr);
+
+    test_cache.set("key", ptr, size_save);
     test_cache.get("key", size_save);
     std::cout << "Verifying get returns size...\n";
-    return size_save;
+    return (size_save - val_size);
 }
 
 uint32_t deepcopy(Cache::val_type ptr, uint32_t sz)
 {
+	Cache test_cache(1024);
     uint32_t blnk = 0;
     test_cache.set("key", ptr, sz);
     if(test_cache.get("key",blnk) != ptr)
@@ -135,12 +109,11 @@ TEST_CASE( "Check int/str get functionality" )
     }
     SECTION("check that memused works")
     {
-        REQUIRE(basic_memused(ap,as) == as);
+        REQUIRE(basic_memused(ap,a) == 0);
     }
-    std::cout << "\n";
     SECTION("check that memused works")
     {
-        REQUIRE(basic_size_get(ap,as) == as);
+        REQUIRE(basic_size_get(ap,a) == 0);
     }
     std::cout << "\n";
 }
@@ -152,24 +125,9 @@ TEST_CASE( "Check eviction and deletion functionality")
 	int as = sizeof(a);
 
     std::cout << "DELETION/EVICTION TEST CASES" << std::endl;
-    SECTION( "basic eviction" )
-    {
-        REQUIRE(basic_evict(ap,as) == "");
-        std::cout << "\n";
-    }
     SECTION( "basic deletion" )
     {
-        REQUIRE(basic_delete(ap,as) == "");
-        std::cout << "\n";
-    }
-    SECTION( "store a key, evict it, then store it again")
-    {   //check that mem after firt store + mem after third store = 2size
-        REQUIRE(store_evict_store(ap,as) == (as * 2));
-        std::cout << "\n";
-    }
-    SECTION( "store a key, evict it, then delete it" )
-    {   //check mem after first store + mem after second store + mem after delete
-        REQUIRE(store_evict_delete(ap,as) == (as + ((as-1) * 2)));
+        REQUIRE(basic_delete(ap,as) == "NULL");
         std::cout << "\n";
     }
     SECTION(" operations on an empty cache ")

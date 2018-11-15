@@ -161,7 +161,7 @@ public:
 		bool parsingSuccessful = reader.parse( outstring.c_str(), root );	 //parse process
 		if ( !parsingSuccessful )
 		{
-				return 0;
+			return 0;
 		}
 		std::string valler = root.get("memused", "NOT FOUND" ).asString();
 		retval = stoi(valler);
