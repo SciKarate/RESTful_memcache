@@ -3,7 +3,9 @@
 #include "catch.hpp"
 #include "cache.hh"
 #include <iostream>
-#include "headercall.hh"
+#include <functional>
+
+Cache test_cache(100); //create a cache
 
 std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 {
@@ -12,8 +14,6 @@ std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 	else
 		{return "";}
 }
-
- //create a cache
 
 /*probably all wrong
 std::string new_cache_delete(std::string newkey)
@@ -34,14 +34,28 @@ std::string basic_set_get(std::string newkey, Cache::val_type ap, int as)
 }
 */
 
+std::string basic_str_set_get(Cache::val_type ptr, uint32_t sz)
+{
+    uint32_t blnk = 0;
+    test_cache.set("key", ptr, sz);
+    std::string outstr = strcast(test_cache.get("key",blnk));
+    std::cout << "Stored:\t" << strcast(ptr) << "\tRetrieved:\t" << outstr << std::endl;
+    return outstr;
+}
+
 TEST_CASE("test shutdown version functionality")
 {
-    Cache test_cache(100);
     std::string a = "hello";
     Cache::val_type ap = &a;
     int as = sizeof(a);
     uint32_t blnk = 0;
 
+
+    SECTION("basic set get")//testing setting a k,v pair and retreiving v
+    {
+        REQUIRE(basic_str_set_get(ap,as) == a);
+        std::cout << "\n";
+    }
     SECTION("new cache delete")//testing delete in empty cache
     {
         REQUIRE(test_cache.del("newk") == 1);
@@ -50,13 +64,6 @@ TEST_CASE("test shutdown version functionality")
     SECTION("new cache get")//testing get in empty cache
     {
         REQUIRE(test_cache.get("newk",blnk) == "NULL");
-        std::cout << "\n";
-    }
-    SECTION("basic set get")//testing setting a k,v pair and retreiving v
-    {
-        test_cache.set("newk", ap, as);
-        std::string outstr = strcast(test_cache.get("newk",blnk));
-        REQUIRE(outstr == "hello");
         std::cout << "\n";
     }
     SECTION("basic delete")//testing deleting item from cache

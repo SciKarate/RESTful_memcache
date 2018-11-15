@@ -4,22 +4,22 @@
 
 static void shutdown_server(std::string addr, std::string port)
 {
-	CURL *curl;
-	CURLcode res;
-	curl = curl_easy_init();
-	std::string surl;
-	surl += addr;
-	surl += ":";
-	surl += port;
-	std::string new_url = surl + "/shutdown";
-	const char* url = new_url.c_str();	
-	if(curl) //-X POST localhost:18085/shutdown
+	CURL *curls;
+	CURLcode ress;
+	curls = curl_easy_init();
+	std::string surls;
+	surls += addr;
+	surls += ":";
+	surls += port;
+	std::string new_urls = surls + "/shutdown";
+	const char* urls = new_urls.c_str();	
+	if(curls) //-X POST localhost:18085/shutdown
 	{
-		curl_easy_setopt(curl, CURLOPT_URL, url);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, "");
-		res = curl_easy_perform(curl);
-		if(res != CURLE_OK)
-			{fprintf(stderr, "shutdown failed:\t %s\n", curl_easy_strerror(res));}
-		curl_easy_cleanup(curl);
+		curl_easy_setopt(curls, CURLOPT_URL, urls);
+		curl_easy_setopt(curls, CURLOPT_POSTFIELDS, "");
+		ress = curl_easy_perform(curls);
+		if(ress != CURLE_OK)
+			{fprintf(stderr, "shutdown failed:\t %s\n", curl_easy_strerror(ress));}
+		curl_easy_cleanup(curls);
 	}
 }
