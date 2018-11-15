@@ -1,21 +1,14 @@
-//g++ testing_client_shutdown.cc cache_client_test_shutdown.cc -o cl.out -lboost_system -pthread -lcurl -ljsoncpp
+//g++ testing_client_shutdown.cc cache_client_test_shutdown.cc -o cls.out -lboost_system -pthread -lcurl -ljsoncpp
 //needs: boost_system, libcurl, jsoncpp
 #include "cache.hh"
 #include "queue.hh"
-#include "shutcall.hh"
 #include <unordered_map>
 #include <cstring> //for "std::memcpy" in set
-
 #include <iostream>
-//#include <stdio.h>
 #include <curl/curl.h> //-lcurl
-//#include <fcntl.h>
 #include <sys/stat.h>
-
 #include <jsoncpp/json/json.h>
-//#include <jsoncpp/json/reader.h>
-//#include <jsoncpp/json/writer.h>
-//#include <jsoncpp/json/value.h>
+#include "shutcall.hh"
 
 std::string address = "localhost";
 std::string portnum = "18085";
@@ -93,6 +86,7 @@ public:
 		std::string outstring;
 		std::string new_url = surl + "/key/" + key;
 		const char* url = new_url.c_str();
+		std::cout << url << std::endl;
 
 		if(curl)
 		{
@@ -170,7 +164,7 @@ public:
 		bool parsingSuccessful = reader.parse( outstring.c_str(), root );	 //parse process
 		if ( !parsingSuccessful )
 		{
-				return 0;
+			return 0;
 		}
 		std::string valler = root.get("memused", "NOT FOUND" ).asString();
 		retval = stoi(valler);
