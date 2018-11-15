@@ -2,7 +2,6 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
 #include "catch.hpp"
 #include "cache.hh"
-#include "cache.hh"
 #include <iostream>
 #include "headercall.hh"
 
@@ -14,116 +13,48 @@ std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 		{return "";}
 }
 
- //create a cache
-
-/*probably all wrong
-std::string new_cache_delete(std::string newkey)
-{
-    test_cache.del(newkey);
-    return "cache is not broken!\n";
-}
-
-std::string new_cache_get(std::string newkey, uint32_t blnk)
-{
-    test_cache.get(newkey,blnk);
-    return "cache is not broken!\n";
-}
-
-std::string basic_set_get(std::string newkey, Cache::val_type ap, int as)
-{
-    test_cache.set("newk", ap, as);
-}
-*/
-
+//all tests must be successive because the deconstructor
+//shuts down the server in this version
 TEST_CASE("test shutdown version functionality")
 {
+    //initialzing objects used in tests
     Cache test_cache(100);
     std::string a = "hello";
     Cache::val_type ap = &a;
     int as = sizeof(a);
     uint32_t blnk = 0;
+    std::string outstr;
 
-    SECTION("new cache delete")//testing delete in empty cache
-    {
-        REQUIRE(test_cache.del("newk") == "NULL");
-        std::cout << "\n";
-    }
-    SECTION("new cache get")//testing get in empty cache
-    {
-        REQUIRE(test_cache.get("newk",blnk) == "NULL");
-        std::cout << "\n";
-    }
-    SECTION("basic set get")//testing setting a k,v pair and retreiving v
-    {
-        test_cache.set("newk", ap, as);
-        std::string outstr = strcast(test_cache.get("newk",blnk));
-        REQUIRE(outstr == "hello");
-        std::cout << "\n";
-    }
-    SECTION("basic delete")//testing deleting item from cache
-    {
-        test_cache.del("newk");
-        std::string outstr = strcast(test_cache.get("newk",blnk));
-        REQUIRE(outstr == "NULL");
-        std::cout << "\n";
-    }
-    SECTION("basic memused")//testing memused of cache
-    {
-        test_cache.set("newk", ap, as);
-        REQUIRE(test_cache.space_used()==5);
-        std::cout << "\n";
-    }
-    SECTION("basic deep copy")
-    {
-        test_cache.set("newk", ap, as);
-        REQUIRE(test_cache.get("newk",blnk) != ap);
-        std::cout << "\n";
+//new cache delete test
+    REQUIRE(test_cache.del("newk") == 0);
 
-    }
+//new cache get test
+    outstr = strcast(test_cache.get("newk",blnk)); 
+    REQUIRE(outstr == "NULL");
 
-
-
-}
-/*
-int main()
-{
-	
-	std::string a = "hello";
-	Cache::val_type ap = &a;
-	int as = sizeof(a);
-	uint32_t blnk = 0;
-
-	//new cache_delete
-	test_cache.del("newk");
-    std::cout << "cache is not broken!\n";
-
-    //new cache get
-    test_cache.get("newk",blnk);
-    std::cout << "cache is not broken!\n";
-
-	//basic set get
+//basic set get test
     test_cache.set("newk", ap, as);
-    std::string outstr = strcast(test_cache.get("newk",blnk));
-    std::cout << "Stored:\t" << strcast(ap) << "\tRetrieved:\t" << outstr << std::endl;
+    outstr = strcast(test_cache.get("newk",blnk));
+    REQUIRE(outstr == "hello");
 
-    //basic delete
-    test_cache.set("newk", ap, as);
+//basic delete test
     test_cache.del("newk");
     outstr = strcast(test_cache.get("newk",blnk));
-    std::cout << "Stored:\t" << "Pointer to delete" << "\tRetrieved:\t" << outstr << std::endl;
+    REQUIRE(outstr == "NULL");
 
-    //basic memused
+//basic memused test
     test_cache.set("newk", ap, as);
-    std::cout << "Verifying space_used...\n";
-    std::cout << test_cache.space_used() << std::endl;
+    REQUIRE(test_cache.space_used()==6);
 
-    //verify deep copy
-    test_cache.set("newk", ap, as);
-    if(test_cache.get("newk",blnk) != ap)
-    	{std::cout << "Deep copy verified!\n";}
-    else
-    	{std::cout << "Deep copy failed!\n";}
+//basic deep copy test
+    REQUIRE(test_cache.get("newk",blnk) != ap);
 }
+
+
+
+
+
+/*
 
 //stores pointer, evicts it, then querries it
 std::string basic_evict(Cache::val_type ptr, uint32_t sz)
