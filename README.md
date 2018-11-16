@@ -23,6 +23,6 @@ Part 2:
 
 	The pair which do not (our preferred versions) are:
 		cache_client_test.cc
-		testing_client_shutdown.cc
+		testing_client.cc
 
 	The commands with which to compile these clients are written as comments in their first lines.

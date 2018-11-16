@@ -1,5 +1,5 @@
 #include "cache.hh"
-#include "queue.hh"
+#include "h_depen/queue.hh"
 #include <unordered_map>
 #include <cstring> //for "std::memcpy" in set
 #include <iostream> //for queue.display

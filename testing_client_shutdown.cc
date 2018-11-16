@@ -1,17 +1,17 @@
 //g++ testing_client_shutdown.cc cache_client_test_shutdown.cc -o cls.out -lboost_system -pthread -lcurl -ljsoncpp
 //needs: boost_system, libcurl, jsoncpp
 #include "cache.hh"
-#include "queue.hh"
+#include "h_depen/queue.hh"
 #include <unordered_map>
 #include <cstring> //for "std::memcpy" in set
 #include <iostream>
 #include <curl/curl.h> //-lcurl
 #include <sys/stat.h>
 #include <jsoncpp/json/json.h>
-#include "shutcall.hh"
+#include "h_depen/shutcall.hh"
 
 std::string address = "localhost";
-std::string portnum = "19086";
+std::string portnum = "18085";
 
 static size_t writer(void *contents, size_t size, size_t nmemb, void *userp)
 {

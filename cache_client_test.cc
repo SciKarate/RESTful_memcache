@@ -1,10 +1,10 @@
 //g++ testing_client.cc cache_client_test.cc -o cl.out -lboost_system -pthread -lcurl -ljsoncpp -Wextra -pedantic -Wall
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main() - only do this in one cpp file
-#include "catch.hpp"
+#include "h_depen/catch.hpp"
 #include "cache.hh"
 #include <iostream>
 #include <functional>
-#include "shutcall.hh"
+#include "h_depen/shutcall.hh"
 
 std::string strcast(Cache::val_type vptr) //takes void ptr to str, returns str
 {
