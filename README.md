@@ -1,28 +1,25 @@
 //Josh Reiss and Ryan Neumann
-# CS389_HW4
+# CS389_HW5
 
-Preface/Dependencies:
-	Our server requires:
-		-lboost_system, -pthread
-	Our clients require:
-		-lboost_system, -pthread, -lcurl / libcurl, -ljsoncpp / jsoncpp
+1) i wanna make set and get reaaaal dang fast!
+so like
+MEMSIZE should only be measuring how long it takes for the network to stuff
+so time(get or set) - time(memsize) removes network factor
+does rate of request have an effect?
+does number of requests/size of requests have an effect?
+	test both timing and rate of success for concurrent clients
+how do different computers affect response time?
 
-Part 1:
-	Our server is:
-		cache_server.cc
-	It can be compiled using the command written as a comment in its first line.
+2) 	Get - Error code or {key, value}
+	Set - Error code or success code + saves k/v pair or horribly breaks
+	Del - Error code or success code + deletion
+	Msz - {memsize, maxmem}
+	Hed - Returns header json
+	Shu - Shuts down server
 
-Part 2:
-	There are two versions of our cache client.
-	One calls a server shutdown in its destructor. The other does not.
-	There are also two corresponding versions of our client test.
+3) Time, space
 
-	The pair of files that shut down the server in the destructor are:
-		cache_client_test_shutdown.cc
-		testing_client_shutdown.cc
+4) requests/second, # concurrent clients, size of requests
 
-	The pair which do not (our preferred versions) are:
-		cache_client_test.cc
-		testing_client.cc
-
-	The commands with which to compile these clients are written as comments in their first lines.
+5) Select factors that will be varied -
+	vary one while holding others constant
