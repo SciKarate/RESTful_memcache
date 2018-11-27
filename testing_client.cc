@@ -42,7 +42,9 @@ public:
 	{
 		for (auto kvpair : data_) //free all ptrs
 		{
-			del(kvpair.first);
+			//del(kvpair.first);
+			delete(data_[kvpair.first]);
+			data_.erase(kvpair.first);
 		}
 		curl = curl_easy_init();
 		curl_global_cleanup();
@@ -134,8 +136,6 @@ public:
 				{retcode = 1;}
 			curl_easy_cleanup(curl); 
 		}
-		delete(data_[key]);
-		data_.erase(key);
 		return retcode;
 	}
 

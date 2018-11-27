@@ -27,10 +27,11 @@ how do different computers affect response time?
 //
 To do:
 	1) Add a thing that times response time
-	2) Find the max # requests/sec where response time <1ms
+	2) Find the max # requests/sec where avg response time <1ms
 	3) Represent ETC workload
-		- lots of gets
-		- lots lots of deletes, many for items which DNE
+		- few sets - (1/16)
+		- lots of gets - (9/16)
+		- lots lots of deletes, many for items which DNE - (6/16)
 	The rest are stretch goals.
 	4) Measure more metrics
 	5) Make workload better
