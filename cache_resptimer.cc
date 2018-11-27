@@ -1,4 +1,4 @@
-//g++ testing_client.cc cache_resptimer.cc -o clgodhelp.out -lboost_system -pthread -lcurl -ljsoncpp -Wextra -pedantic -Wall
+//g++ testing_client.cc cache_resptimer.cc -o clresp.out -lboost_system -pthread -lcurl -ljsoncpp -Wextra -pedantic -Wall
 #include "cache.hh"
 #include <iostream>
 #include <functional>

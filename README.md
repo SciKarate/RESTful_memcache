@@ -33,6 +33,6 @@ To do:
 		- lots of gets - (9/16)
 		- lots lots of deletes, many for items which DNE - (6/16)
 	The rest are stretch goals.
-	4) Measure more metrics
-	5) Make workload better
+	4) Measure more metrics - concurrent clients, size of request
+	5) Make workload better - make probabilities less arbitrary
 	6) Share with other students.
