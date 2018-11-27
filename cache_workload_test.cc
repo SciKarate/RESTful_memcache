@@ -1,4 +1,4 @@
-//g++ testing_client.cc cache_resptimer.cc -o clgodhelp.out -lboost_system -pthread -lcurl -ljsoncpp -Wextra -pedantic -Wall
+//g++ testing_client.cc cache_workload_test.cc -o clworkload.out -lboost_system -pthread -lcurl -ljsoncpp -Wextra -pedantic -Wall
 #include "cache.hh"
 #include <iostream>
 #include <functional>
@@ -19,12 +19,12 @@ int main(int argc, char *argv[])
 
     double time;
     double runtime = atoi(argv[1]);
-    runtime = runtime*1000000000
-	double waittime = 1000/15; //roughly 240 reqs/second if 16 requests per loop
+    runtime = runtime*1000000000;
+	double wait_time = 1000/15; //roughly 240 reqs/second if 16 requests per loop
 	long ss;
     long ns;
     double time_elapsed;
-    
+
     //initializing items for cache
     Cache test_cache(1024);
     uint32_t sz = 0;
@@ -37,37 +37,40 @@ int main(int argc, char *argv[])
 	clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     prevtime.tv_sec = start.tv_sec;
     prevtime.tv_nsec = start.tv_nsec;
-    while time < runtime
+    while (time < runtime)
     {
-	    while time_elapsed >= wait_time
+	    
+    	
+		//simulating workload (16 requests)
+		test_cache.set("key", ap, as);
+
+		test_cache.get("key",sz);
+		test_cache.get("badkey",sz);
+		test_cache.get("key",sz);
+		test_cache.get("key",sz);
+		test_cache.get("key",sz);
+		test_cache.get("key",sz);
+		test_cache.get("badkey",sz);
+		test_cache.get("key",sz);
+		test_cache.get("key",sz);
+
+		test_cache.del("badkey");
+		test_cache.del("key");
+		test_cache.del("key");
+		test_cache.del("key");
+		test_cache.del("key");
+		test_cache.del("key");
+
+
+		
+		while (time_elapsed <= wait_time)//delays loop to achieve ~240 reqs/sec
 	    {
-	    	
-			//simulating workload (16 requests)
-			test_cache.set("key", ap, as);
-
-			test_cache.get("key",sz);
-			test_cache.get("badkey",sz);
-			test_cache.get("key",sz);
-			test_cache.get("key",sz);
-			test_cache.get("key",sz);
-			test_cache.get("key",sz);
-			test_cache.get("badkey",sz);
-			test_cache.get("key",sz);
-			test_cache.get("key",sz);
-
-			test_cache.del("badkey");
-			test_cache.del("key");
-			test_cache.del("key");
-			test_cache.del("key");
-			test_cache.del("key");
-			test_cache.del("key")
-
-
-			clock_gettime(CLOCK_MONOTONIC_RAW, &currtime);
+	    	clock_gettime(CLOCK_MONOTONIC_RAW, &currtime);
 	    	ss = (currtime.tv_sec - prevtime.tv_sec);
 			ns = (currtime.tv_nsec - prevtime.tv_nsec);
 			time_elapsed = ((double)ss * 1000000000) + (double)ns;
 			time += time_elapsed;
+			std::cout<<"delay"<<std::endl;
 	    }
 	    time_elapsed = 0;//resetting loop
 	}
