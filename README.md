@@ -26,8 +26,8 @@ how do different computers affect response time?
 
 //
 To do:
-	1) Add a thing that times response time
-	2) Find the max # requests/sec where avg response time <1ms
+	1) Add a thing that times response time #check
+	2) Find the max # requests/sec where avg response time <1ms #check
 	3) Represent ETC workload
 		- few sets - (1/16)
 		- lots of gets - (9/16)
