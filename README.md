@@ -23,16 +23,3 @@ how do different computers affect response time?
 
 5) Select factors that will be varied -
 	vary one while holding others constant
-
-//
-To do:
-	1) Add a thing that times response time #check
-	2) Find the max # requests/sec where avg response time <1ms #check
-	3) Represent ETC workload
-		- few sets - (1/16)
-		- lots of gets - (9/16)
-		- lots lots of deletes, many for items which DNE - (6/16)
-	The rest are stretch goals.
-	4) Measure more metrics - concurrent clients, size of request
-	5) Make workload better - make probabilities less arbitrary
-	6) Share with other students.

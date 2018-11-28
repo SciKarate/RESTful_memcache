@@ -7,16 +7,34 @@
 #include <chrono>
 #include <ctime>
 #include <time.h>
+#include <algorithm>
+
+std::string randomString(uint length) //thank you stackexchange
+{
+	auto randchar = []() -> char
+    {
+        const char charset[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+        const size_t max_index = (sizeof(charset) - 1);
+        return charset[ rand() % max_index ];
+    };
+    std::string str(length,0);
+    std::generate_n( str.begin(), length, randchar );
+    return str;
+}
 
 int main(int argc, char *argv[])
 {
 	if(argc < 2)
     {
     	std::cout << "Need more arguments!" << std::endl;
-    	std::cout << "Usage: \"./cl.out [# reqs/sec] [# total reqs]\"" << std::endl;
+    	std::cout << "Usage: \"./cl.out [reqs size] [# total reqs]\"" << std::endl;
   		return 0;
     }
-    int reqssec = atoi(argv[1]);
+    int reqssec = 245;
+    int reqssize = atoi(argv[1]);
     int totalreqs = atoi(argv[2]);
     Cache test_cache(1024);
     double wait_time = 1000000000 / reqssec;
@@ -33,6 +51,9 @@ int main(int argc, char *argv[])
     long ns;
     double time_elapsed;
     uint32_t bleep = 0;
+
+    std::string my_stringboy = randomString(reqssize);
+    std::cout << my_stringboy << std::endl;
 
 //timing the overhead (no server request, ng = no get)
     struct timespec ngstart, ngcurrtime, ngprevtime;
@@ -76,7 +97,7 @@ int main(int argc, char *argv[])
 
     while(reqsthus < totalreqs)
     {
-    	test_cache.get("hello", bleep);
+    	test_cache.set("hello", &my_stringboy, bleep);
 
     	while(oldreq == reqsthus)
     	{
@@ -123,4 +144,3 @@ time by about 1/10,000th.
 */
 
 //246 = max requests per second resulting in <1 ms response time on RyanMacBook
-//245 = max requests per second resulting in <1 ms response time on JoshRzBlade
