@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     printf("total response time elapsed:\t%fss\n", time_elapsed);
     printf("Reponse time with overhead in ms:\t%fms\n", avg_time);
     printf("Reponse time without overhead in ms:\t%fms\n", avg_response_time);
-
+    shutdown_server("localhost","18085");
     return 0;
 }
 /*Response time appears to increase exponentially while overhead scales

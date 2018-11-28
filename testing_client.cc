@@ -44,7 +44,7 @@ public:
 		{
 			//del(kvpair.first);
 			delete(data_[kvpair.first]);
-			data_.erase(kvpair.first);
+			//data_.erase(kvpair.first);
 		}
 		curl = curl_easy_init();
 		curl_global_cleanup();
