@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
     uint32_t bleep = 0;
 
 //timing the overhead (no server request, ng = no get)
+    uint32_t first = 0;
     struct timespec ngstart, ngcurrtime, ngprevtime;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ngstart);
     ngprevtime.tv_sec = ngstart.tv_sec;
@@ -45,6 +46,11 @@ int main(int argc, char *argv[])
 
     	while(ngoldreq == ngreqsthus)
     	{
+    		if(first == 0)
+    		{
+    			first = 1;
+    			clock_gettime(CLOCK_MONOTONIC_RAW, &ngstart);
+    		}
     		clock_gettime(CLOCK_MONOTONIC_RAW, &ngcurrtime);
     		ngss = (ngcurrtime.tv_sec - ngprevtime.tv_sec);
     		ngns = (ngcurrtime.tv_nsec - ngprevtime.tv_nsec);
@@ -73,6 +79,7 @@ int main(int argc, char *argv[])
     clock_gettime(CLOCK_MONOTONIC_RAW, &start);
     prevtime.tv_sec = start.tv_sec;
     prevtime.tv_nsec = start.tv_nsec;
+    first = 0;
 
     while(reqsthus < totalreqs)
     {
@@ -80,6 +87,11 @@ int main(int argc, char *argv[])
 
     	while(oldreq == reqsthus)
     	{
+    		if(first == 0)
+    		{
+    			first = 1;
+    			clock_gettime(CLOCK_MONOTONIC_RAW, &ngstart);
+    		}
     		clock_gettime(CLOCK_MONOTONIC_RAW, &currtime);
     		ss = (currtime.tv_sec - prevtime.tv_sec);
     		ns = (currtime.tv_nsec - prevtime.tv_nsec);

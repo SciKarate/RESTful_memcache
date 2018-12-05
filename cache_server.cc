@@ -124,5 +124,5 @@ int main(int argc, char *argv[])
     		{return crow::response(404);}
 	});
 
-	app.port(portsaved).run();
+	app.port(portsaved).multithreaded().run();
 }
