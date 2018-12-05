@@ -50,6 +50,8 @@ int main(int argc, char *argv[])
     		{
     			first = 1;
     			clock_gettime(CLOCK_MONOTONIC_RAW, &ngstart);
+    			ngprevtime.tv_sec = ngstart.tv_sec;
+    			ngprevtime.tv_nsec = ngstart.tv_nsec;
     		}
     		clock_gettime(CLOCK_MONOTONIC_RAW, &ngcurrtime);
     		ngss = (ngcurrtime.tv_sec - ngprevtime.tv_sec);
@@ -91,6 +93,8 @@ int main(int argc, char *argv[])
     		{
     			first = 1;
     			clock_gettime(CLOCK_MONOTONIC_RAW, &ngstart);
+    			prevtime.tv_sec = start.tv_sec;
+    			prevtime.tv_nsec = start.tv_nsec;
     		}
     		clock_gettime(CLOCK_MONOTONIC_RAW, &currtime);
     		ss = (currtime.tv_sec - prevtime.tv_sec);
