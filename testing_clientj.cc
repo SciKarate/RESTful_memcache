@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include <jsoncpp/json/json.h>
 
-std::string address = "134.10.73.153";
+std::string address = "134.10.23.176";
 std::string portnum = "18085";
 
 static size_t writer(void *contents, size_t size, size_t nmemb, void *userp)
