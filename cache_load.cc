@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     	new_key = randomString(16);
     	values[i] = new_key;
     }
-
+    
 	int ngreqsthus = 0;
     int ngoldreq = ngreqsthus;
     long ngss;
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     double time_elapsed;
     uint32_t bleep = 0;
 
-//timing the overhead (no server request, ng = no get)
+	//timing the overhead (no server request, ng = no get)
     uint32_t first = 0;
     struct timespec ngstart, ngcurrtime, ngprevtime;
     clock_gettime(CLOCK_MONOTONIC_RAW, &ngstart);
