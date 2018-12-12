@@ -48,3 +48,13 @@ We cannot think of what else would be using 11.42% overhead at a seemingly arbit
 Odd Note:
 	cload.out and cletc.out both segfault after finishing on Ryan's computer every time, but not on Josh's. We suspect that this might be caused by our random string generation, as clresp.out does not segfault and the only substantial differentiator between clresp and cletc/cload is random string generation.
 	cload.out and cletc.out leak memory all over the place, but we can't identify the cause for that. We never malloc or new anywhere.
+
+
+
+
+Related files:
+	cache_load.cc
+	cache_server.cc
+	cload.out
+	serv.out
+	perf.data
