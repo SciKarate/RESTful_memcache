@@ -7,6 +7,14 @@ sudo apt-get install libpthread-stubs0-dev
 sudo apt install libboost-all-dev
 sudo apt install libcurl4-openssl-dev
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+This project is a mess, but it works!!
+The documentation is weird and there's a billion files because the scope changed every week. Sorry!
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 HW6 - Step 1
 After HW5, our response time was already below 1ms for GETs at higher than 10 requests per second.
 
