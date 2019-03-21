@@ -7,11 +7,8 @@ sudo apt-get install libpthread-stubs0-dev
 sudo apt install libboost-all-dev
 sudo apt install libcurl4-openssl-dev
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
-This project is a mess, but it works!!
-The documentation is weird and there's a billion files because the scope changed every week. Sorry!
-///////////////////////////////////////////////////////////////////////////////////////////////////
-
+//This project is a mess, but it works!!
+//The documentation is weird and there's a billion files because the scope changed every week. Sorry!
 
 
 
